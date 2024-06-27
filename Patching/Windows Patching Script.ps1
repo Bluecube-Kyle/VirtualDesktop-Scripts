@@ -286,6 +286,7 @@ $Chrome = Test-Path -Path "C:\Program Files\Google\Chrome\Application\Chrome.exe
 $Chrome64 = Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\Chrome.exe"
 	If(($Chrome -eq $true) -or ($Chrome64 -eq $true))  {
 	Write-Progress -Activity "Browser Updates" -Status "Downloading Latest Chrome Version" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 	
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update" -Name "UpdateDefault" -Value 1 -Type Dword -Force -PassThru
 	$Installer = "chrome_installer.exe"; Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "$Installs\$Installer"
 	Write-Progress -Activity "Browser Updates" -Status "Installing Latest Chrome Version" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
 	Start-Process -FilePath "$Installs\$Installer" -Args "/silent /install" -Verb RunAs -Wait
@@ -294,17 +295,17 @@ $Chrome64 = Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\Ch
 
 	#Disable Automatic Updater services and tasks - Google adds an MSI code onto Scheduledtasks to try and prevent auto stopping the tasks. The following will acquire the task name and then wildcard for the MSIcode to disable it
 	Write-Progress -Activity "Browser Updates" -Status "Disabling Chrome Services and Tasks" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update" -Name "UpdateDefault" -Value 0 -Type Dword -Force -PassThru
 	$Services = Get-Service
 	$ScheduledTask = Get-ScheduledTask
-		if($Services -match "gupdate") {Set-Service gupdate -StartupType Disabled -PassThru}
-		if($Services -match "gupdatem") {Set-Service gupdatem -StartupType Disabled -PassThru}
-		if($Services -match "GoogleChromeElevationService") {Set-Service GoogleChromeElevationService -StartupType Disabled -PassThru}
-	$MachineCore = "GoogleUpdateTaskMachineCore" + "*"
-	$MachineUA = "GoogleUpdateTaskMachineUA" + "*"
-	$GoogleUpdateTaskMachineCore = Get-ScheduledTask -TaskName $MachineCore
-	$GoogleUpdateTaskMachineUA = Get-ScheduledTask -TaskName $MachineUA
-		If($ScheduledTask -match "GoogleUpdateTaskMachineCore") {Disable-ScheduledTask $GoogleUpdateTaskMachineCore}
-		If($ScheduledTask -match "GoogleUpdateTaskMachineUA") {Disable-ScheduledTask $GoogleUpdateTaskMachineUA}
+		If($Services -match "gupdate") {Set-Service gupdate -StartupType Disabled -PassThru}
+		If($Services -match "gupdatem") {Set-Service gupdatem -StartupType Disabled -PassThru}
+		If($Services -match "GoogleUpdaterService*")	{Get-Service -DisplayName "GoogleUpdater Service*" | Set-Service -StartupType Disabled}		
+		If($Services -match "GoogleUpdaterInternalService*")	{Get-Service -DisplayName "GoogleUpdater InternalService*" | Set-Service -StartupType Disabled}
+		If($Services -match "GoogleChromeElevationService") {Set-Service GoogleChromeElevationService -StartupType Disabled -PassThru}
+		If($Tasks -match "*GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
+		If($Tasks -match "*GoogleUpdateTaskMachineCore*")Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask
+		If($Tasks -match "*GoogleUpdaterTaskSystem*")Get-ScheduledTask -TaskName "*GoogleUpdaterTaskSystem*" | Disable-ScheduledTask
 	}
 	else { Write-Output "Chrome Not installed. Skipping Update" }
 

@@ -148,8 +148,8 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -Per
 		If($Script:DisabledService -match "gupdate") { 
 			$GoogleUpdaterService = (Get-Service -DisplayName "GoogleUpdater Service*").Name
 			$GoogleUpdaterIntService = (Get-Service -DisplayName "GoogleUpdater InternalService*").Name
-			Get-Service -DisplayName "GoogleUpdater Service*" | Set-Service -StartupType Disabled		
-			Get-Service -DisplayName "GoogleUpdater InternalService*" | Set-Service -StartupType Disabled
+			Get-Service -DisplayName "GoogleUpdaterService*" | Set-Service -StartupType Disabled		
+			Get-Service -DisplayName "GoogleUpdaterInternalService*" | Set-Service -StartupType Disabled
 			Write-Output "Startup of service $GoogleUpdaterService set to Disabled"
 			Write-Output "Startup of service $GoogleUpdaterIntService set to Disabled"
 		}
@@ -232,12 +232,9 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "OfficeTelemetryAgentFallBack2016") {Disable-ScheduledTask -TaskName "OfficeTelemetryAgentFallBack2016" -TaskPath "\Microsoft\Office\"}
 			If($Tasks -match "OfficeTelemetryAgentLogOn2016") {Disable-ScheduledTask -TaskName "OfficeTelemetryAgentLogOn2016" -TaskPath "\Microsoft\Office\"}
 			#====================---------- Browsers ----------====================#
-			$TaskName1Google = "GoogleUpdateTaskMachineCore" + "*"
-			$TaskName2Google = "GoogleUpdateTaskMachineUA" + "*"
-			$GoogleUpdateTaskMachineCore = Get-ScheduledTask -TaskName $TaskName1Google
-			$GoogleUpdateTaskMachineUA = Get-ScheduledTask -TaskName $TaskName2Google
-			If($Tasks -match "GoogleUpdateTaskMachineCore") {Disable-ScheduledTask $GoogleUpdateTaskMachineCore}
-			If($Tasks -match "GoogleUpdateTaskMachineUA") {Disable-ScheduledTask $GoogleUpdateTaskMachineUA}
+			If($Tasks -match "*GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
+			If($Tasks -match "*GoogleUpdateTaskMachineCore*")Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask
+			If($Tasks -match "*GoogleUpdaterTaskSystem*")Get-ScheduledTask -TaskName "*GoogleUpdaterTaskSystem*" | Disable-ScheduledTask
 			If($Tasks -match "MicrosoftEdgeUpdateTaskMachineCore") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateTaskMachineCore"}
 			If($Tasks -match "MicrosoftEdgeUpdateTaskMachineUA") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateTaskMachineUA"}
 			If($Tasks -match "MicrosoftEdgeUpdateBrowserReplacement") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateBrowserReplacementTask"}
