@@ -22,6 +22,8 @@ Foreach($Script in $ScriptFile) {
 	$shell = New-Object -comObject WScript.Shell
 	$shortcut = $shell.CreateShortcut("$Desktop\$Script.lnk")
 	$shortcut.TargetPath = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-	$shortcut.Arguments = "-F $ScriptPath$Script.ps1"
+	$shortcut.Arguments = "-F `"$ScriptPath$Script.ps1`""
 	$shortcut.Save()
 }
+
+Powershell -F "$ScriptPath$LocalCertSign.ps1"
