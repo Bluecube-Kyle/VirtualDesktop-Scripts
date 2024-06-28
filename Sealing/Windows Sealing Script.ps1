@@ -357,7 +357,7 @@ Stop-Service WSearch -Force
 Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Windows.edb" -Force
 
 #Clear Event Logs
-Write-Output "====================---------- Clear All Event Logs ----------===================="
+Write-Output "====================---------- Clear All Users Appdata Logs ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
 $Logs = Get-EventLog -List
@@ -384,7 +384,7 @@ Write-Output "====================---------- Clear IP and DNS Cache ----------==
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
 IpConfig /FlushDns
-IpConfig /Release $Env:UserDnsDomain
+IpConfig /Release "Domain Network"
 
 If($Script:VirtualDesktopType -match "PVS") {
 Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
