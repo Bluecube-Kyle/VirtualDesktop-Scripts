@@ -139,6 +139,7 @@ $NuGetProvider = Get-PackageProvider -ListAvailable
 
 #Pull Updates list and then install updates list - Pulling first outputs full update options to log before installing
 Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+bitsadmin.exe /reset /allusers
 Import-Module PSWindowsUpdate
 Get-WUInstall -MicrosoftUpdate
 Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
@@ -303,9 +304,9 @@ $Chrome64 = Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\Ch
 		If($Services -match "GoogleUpdaterService*")	{Get-Service -DisplayName "GoogleUpdater Service*" | Set-Service -StartupType Disabled}		
 		If($Services -match "GoogleUpdaterInternalService*")	{Get-Service -DisplayName "GoogleUpdater InternalService*" | Set-Service -StartupType Disabled}
 		If($Services -match "GoogleChromeElevationService") {Set-Service GoogleChromeElevationService -StartupType Disabled -PassThru}
-		If($Tasks -match "*GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
-		If($Tasks -match "*GoogleUpdateTaskMachineCore*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask}
-		If($Tasks -match "*GoogleUpdaterTaskSystem*") {Get-ScheduledTask -TaskName "*GoogleUpdaterTaskSystem*" | Disable-ScheduledTask}
+		If($Tasks -match "GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
+		If($Tasks -match "GoogleUpdateTaskMachineCore*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask}
+		If($Tasks -match "GoogleUpdaterTaskSystem*") {Get-ScheduledTask -TaskName "*GoogleUpdaterTaskSystem*" | Disable-ScheduledTask}
 	}
 	else { Write-Output "Chrome Not installed. Skipping Update" }
 

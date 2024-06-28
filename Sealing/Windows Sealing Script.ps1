@@ -39,7 +39,7 @@ Add-Content -Path $ConfigFile -Value "#---------------Bluecube Sealing Config V1
 #Created by Kyle Baxter
 
 #Configurable Variable for script execution
-#Toggle settings have a value of 0 or 1 to disable or enable the option"
+#Toggle settings have a value of 1 for enabled. Else blank / 0"
 }
 
 #Acquire all Variable stored in file
@@ -56,25 +56,29 @@ If($Script:DomainControllers -eq $null) {
 	Add-Content -Path $ConfigFile -Value "DomainControllers = $Script:DomainControllers"
 	Clear}
 If($Script:HybridAD -eq $null) {
-	$Script:HybridAD = Read-Host -Prompt "Leave HybridAD On Sealing - Enter 0 for no and 1 for yes"
+	$Script:HybridAD = Read-Host -Prompt "Leave HybridAD On Sealing - Enter 1 else leave blank"
 	Add-Content -Path $ConfigFile -Value "HybridAD = $Script:HybridAD"
 	Clear}
 If($Script:CorrectServices -eq $null) {
-	$Script:CorrectServices = Read-Host -Prompt "Correct Services for Performance on Sealing - Enter 0 for no and 1 for yes"
+	$Script:CorrectServices = Read-Host -Prompt "Correct Services for Performance on Sealing - Enter 1 else leave blank"
 	Add-Content -Path $ConfigFile -Value "CorrectServices = $Script:CorrectServices"
 	Clear}
 If($Script:DisableTasks -eq $null) {
-	$Script:DisableTasks = Read-Host -Prompt "Disable Tasks for Performance on Sealing - Enter 0 for no and 1 for yes"
+	$Script:DisableTasks = Read-Host -Prompt "Disable Tasks for Performance on Sealing - Enter 1 else leave blank"
 	Add-Content -Path $ConfigFile -Value "DisableTasks = $Script:DisableTasks"
 	Clear}
 If($Script:DefaultUser -eq $null) {
-	$Script:DefaultUser = Read-Host -Prompt "Set NTUser.Dat Performance settings on Sealing - Enter 0 for no and 1 for yes"
+	$Script:DefaultUser = Read-Host -Prompt "Set NTUser.Dat Performance settings on Sealing - Enter 1 else leave blank"
 	Add-Content -Path $ConfigFile -Value "DefaultUser = $Script:DefaultUser"
 	Clear}	
 If($Script:Rearm -eq $null) {
-	$Script:Rearm = Read-Host -Prompt "Rearm Windows Activation On Sealing - Enter 0 for no and 1 for yes"
+	$Script:Rearm = Read-Host -Prompt "Rearm Windows Activation On Sealing - Enter 1 else leave blank"
 	Add-Content -Path $ConfigFile -Value "Rearm = $Script:Rearm"
 	Clear}	
+If($Script:VirtualDesktopType -eq $null) {
+	$Script:VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
+	Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $Script:VirtualDesktopType"
+	Clear}		
 If($Script:AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
 If($Script:ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}
 If($Script:DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
@@ -232,9 +236,9 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "OfficeTelemetryAgentFallBack2016") {Disable-ScheduledTask -TaskName "OfficeTelemetryAgentFallBack2016" -TaskPath "\Microsoft\Office\"}
 			If($Tasks -match "OfficeTelemetryAgentLogOn2016") {Disable-ScheduledTask -TaskName "OfficeTelemetryAgentLogOn2016" -TaskPath "\Microsoft\Office\"}
 			#====================---------- Browsers ----------====================#
-			If($Tasks -match "*GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
-			If($Tasks -match "*GoogleUpdateTaskMachineCore*") {Get-ScheduledTask -TaskName "*GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask}
-			If($Tasks -match "*GoogleUpdaterTaskSystem*") {Get-ScheduledTask -TaskName "*GoogleUpdaterTaskSystem*" | Disable-ScheduledTask}
+			If($Tasks -match "GoogleUpdateTaskMachineUA*") {Get-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA*" | Disable-ScheduledTask}
+			If($Tasks -match "GoogleUpdateTaskMachineCore*") {Get-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore*" | Disable-ScheduledTask}
+			If($Tasks -match "GoogleUpdaterTaskSystem*") {Get-ScheduledTask -TaskName "GoogleUpdaterTaskSystem*" | Disable-ScheduledTask}
 			If($Tasks -match "MicrosoftEdgeUpdateTaskMachineCore") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateTaskMachineCore"}
 			If($Tasks -match "MicrosoftEdgeUpdateTaskMachineUA") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateTaskMachineUA"}
 			If($Tasks -match "MicrosoftEdgeUpdateBrowserReplacement") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateBrowserReplacementTask"}
@@ -367,24 +371,12 @@ Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentCompl
 IpConfig /FlushDns
 IpConfig /Release $Env:UserDnsDomain
 
-Stop-Transcript
-}
-
-Function PVSImage {
-Start-Transcript -Append -Path "$LogPath$Log - PVS.log"
-#Clear TCPIP
-Write-Output "====================---------- Remove TCPIP Hostnames ----------===================="
-Write-Output ""
+If($Script:VirtualDesktopType -match "PVS") {
 Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
 Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
 Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Force
-
-Stop-Transcript
 }
-
-Function MCSImage {
-Start-Transcript -Append -Path "$LogPath$Log - MCS.log"
-#
+If($Script:VirtualDesktopType -match "MCS") { }
 Stop-Transcript
 }
 
@@ -427,9 +419,8 @@ $listBox.Size = New-Object System.Drawing.Size(520,40)
 $listBox.Font = New-Object System.Drawing.Font("Cascadia Mono",12,[System.Drawing.FontStyle]::Regular)
 $listBox.SelectionMode = 'MultiExtended'
 
-[void] $listBox.Items.Add('1. Seal PVS Image')
-[void] $listBox.Items.Add('2. Seal MCS Image')
-[void] $listBox.Items.Add('3. Edit Config')
+[void] $listBox.Items.Add('1. Seal Image')
+[void] $listBox.Items.Add('2. Edit Config')
 
 $listBox.Height = 140
 $form.Controls.Add($listBox)
@@ -442,14 +433,11 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
     $x = $listBox.SelectedItems
 	#Adds TotalTasks values if choice is selected. Used for setting the progress bars % per task
 	If($x -match "1.") {$TotalTasks += 13}
-	If($x -match "2.") {$TotalTasks += 12}
 	#Runs each function if its chosen and outputs the results to log file	
-	If(($x -match "1.") -or ($x -match "2.")) {SealingImage}
-	If($x -match "1.") {PVSImage}
-	If($x -match "2.") {MCSImage}
-	If($x -match "3.") {Start-Process $ConfigFile}
-	If(($x -match "1.") -or ($x -match "2.")) {
+	If($x -match "1.") {SealingImage}
+	If($x -match "2.") {Start-Process $ConfigFile}
+	If($x -match "1.") {
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
-		Start-Sleep 1 ; Shutdown /s /t 1
+		Start-Sleep 10 ; Shutdown /s /t 1
 	}
 }
