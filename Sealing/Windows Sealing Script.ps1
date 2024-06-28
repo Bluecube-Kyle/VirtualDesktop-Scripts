@@ -91,15 +91,14 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Global Variables
 $global:CurrentTask = 0
-$global:PercentComplete = 0
-$global:TotalTasks = 14
+$global:TotalTasks = 16
 
 Function SealingImage {
 Start-Transcript -Append -Path "$LogPath$Log.log" 
 #Update Defender Definitions
 Write-Output "====================---------- Defender Definitions Update ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "Updating Defender Definitions" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.exe"
 	If($NativeDefender -eq $true) {
 	& "C:\Program Files\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -DynamicSignatures
@@ -109,20 +108,20 @@ $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.ex
 #Leave Hybrid AD
 Write-Output "====================---------- Leaving Hybrid AD ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Leave Hybrid AD" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Leave Hybrid AD" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	If($HybridAD -eq "1") {Dsregcmd.exe /leave} Else {Write-Output "Leave HybridAD Disabled"}
 
 #Set Time Servers
 Write-Output "====================---------- Setting Time Servers to local Domains ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Setting Time Servers" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Setting Time Servers" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 W32TM /Config /SyncFromFlags:Manual /ManualPeerList:$script:DomainControllers /Update
 Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" -Name NTPServer 
 
 #Disable Services
 Write-Output "====================---------- Disabling Unecessary Services ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	If($CorrectServices -eq "1") {		
 		$Services = Get-Service | Select -Expand Name
 		$Script:AutomaticService = $Script:AutomaticService -Split ","
@@ -163,7 +162,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -Per
 #Disabled Scheduled Tasks
 Write-Output "====================---------- Disabling Unecessary Tasks ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	If($DisableTasks -eq "1") {
 		Takeown /f "C:\Windows\System32\Tasks" /a /r /D y
 		Icacls "C:\Windows\System32\Tasks" /grant administrators:F /T
@@ -254,7 +253,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 #Setting System Registry Keys
 Write-Output "====================---------- Applying Registry Settings ----------===================="
 Write-Output ""
-Write-Progress -Activity "Service Corrections" -Status "Adding System RegKeys" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Service Corrections" -Status "Adding System RegKeys" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 
 $RegMaint = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance'
 $RegDisableTaskOffload = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
@@ -291,7 +290,7 @@ Set-ItemProperty -Path $RegAdobe -Name "bUpdater" -Value 0 -Type Dword -Force -P
 #Adjusts Default Ntuser.Dat settings to set for performance
 Write-Output "====================---------- Adjusting Default NTUser.Dat ----------===================="
 Write-Output ""
-Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	If($DefaultUser -eq "1") {
 		Reg Load HKLM\Temp C:\Users\Default\NTUSER.DAT
 		Reg Add "HKLM\Temp\Software\Microsoft\Windows\CurrentVersion\Explorer" /v ShellState /t REG_BINARY /d 240000003C2800000000000000000000 /f
@@ -335,7 +334,7 @@ Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser
 #Reset Performance Counters
 Write-Output "====================---------- Reset System Performance Counters ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force -PassThru}
 	& "c:\windows\system32\lodctr" /R
 	& "c:\windows\sysWOW64\lodctr" /R
@@ -344,7 +343,7 @@ Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -
 #Clear SoftwareDistribution Folder
 Write-Output "====================---------- Clear Software Distribution Folder ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Clearing SoftwareDistribution Folder" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "Clearing SoftwareDistribution Folder" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 $SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
 	If($Services -match "Wuauserv") {Stop-Service Wuauserv -Force -PassThru}
 	If($SoftwareDistribution -eq $true) {Remove-Item -Path "C:\Windows\SoftwareDistribution" -Force -Recurse}
@@ -352,29 +351,36 @@ $SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
 #Reset Windows Search Index
 Write-Output "====================---------- Reset Windows Search Index ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Resetting WSearch Index" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "Resetting WSearch Index" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 Stop-Service WSearch -Force
 Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Windows.edb" -Force
 
 #Clear Event Logs
-Write-Output "====================---------- Clear All Users Appdata Logs ----------===================="
+Write-Output "====================---------- Clear All Event Logs ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
 
 #Clear Users accounts Appdata
-Write-Output "====================---------- Clear All Event Logs ----------===================="
+Write-Output "====================---------- Clear All User AppData ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Appdata Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Write-Progress -Activity "Sealing Image" -Status "Appdata Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 Remove-Item -Path "C:\Users\*\AppData" -Recurse -Force -ErrorAction SilentlyContinue
+
+#Clear BITS Queue
+Write-Output "====================---------- Clear All Bits Queue ----------===================="
+Write-Output ""
+Write-Progress -Activity "Sealing Image" -Status "Clear BITS Queue" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
+
+bitsadmin.exe /reset /allusers
 
 #Extend Windows Activation Prompt
 Write-Output "====================---------- Rearm Windows ----------===================="
 Write-Output ""
 If($Script:Rearm -eq "1"){
-	Write-Progress -Activity "Sealing Image" -Status "Rearm Windows" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+	Write-Progress -Activity "Sealing Image" -Status "Rearm Windows" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 	Start-Process slmgr -args "/rearm" -PassThru
 	Start-Sleep 10
 } Else {Write-Output "Rearm On Seal Disabled"}
@@ -382,12 +388,12 @@ If($Script:Rearm -eq "1"){
 #Clear IP And DNS
 Write-Output "====================---------- Clear IP and DNS Cache ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 IpConfig /FlushDns
 IpConfig /Release "Domain Network"
 
 If($Script:VirtualDesktopType -match "PVS") {
-Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
 Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Force
 }
