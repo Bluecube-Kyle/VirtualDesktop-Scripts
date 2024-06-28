@@ -364,6 +364,12 @@ $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
 
+#Clear Users accounts Appdata
+Write-Output "====================---------- Clear All Event Logs ----------===================="
+Write-Output ""
+Write-Progress -Activity "Sealing Image" -Status "Appdata Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $global:TotalTasks) * 100 
+Remove-Item -Path "C:\Users\*\AppData" -Recurse -Force -ErrorAction SilentlyContinue
+
 #Extend Windows Activation Prompt
 Write-Output "====================---------- Rearm Windows ----------===================="
 Write-Output ""
