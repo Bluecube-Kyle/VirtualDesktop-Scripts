@@ -81,7 +81,7 @@ If($Script:VirtualDesktopType -eq $null) {
 	Clear}		
 If($Script:AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
 If($Script:ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}
-If($Script:DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+If($Script:DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
 
 #Re-Acquire all Variable stored in file. This is necessary to update Service values 
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -164,6 +164,8 @@ Write-Output "====================---------- Disabling Unecessary Tasks --------
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
 	If($DisableTasks -eq "1") {
+		Takeown /f "C:\Windows\System32\Tasks" /a /r /D y
+		Icacls "C:\Windows\System32\Tasks" /grant administrators:F /T
 		$Tasks = Get-ScheduledTask
 			If($Tasks -match "Cellular") {Disable-ScheduledTask -TaskName "Cellular" -TaskPath "\Microsoft\Windows\Management\Provisioning\"}
 			If($Tasks -match "Consolidator") {Disable-ScheduledTask -TaskName "Consolidator" -TaskPath "\Microsoft\Windows\Customer Experience Improvement Program\"}
@@ -227,6 +229,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "Schedule Wake To Work") {Disable-ScheduledTask -TaskName "Schedule Wake To Work" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
 			If($Tasks -match "Reboot_AC") {Disable-ScheduledTask -TaskName "Reboot_AC" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
 			If($Tasks -match "Reboot_Battery") {Disable-ScheduledTask -TaskName "Reboot_Battery" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+			If($Tasks -match "PerformRemediation") {Disable-ScheduledTask -TaskName "PerformRemediation" -TaskPath "\Microsoft\Windows\WaaSMedic\"}
 			#====================---------- Office Apps ----------====================#
 			If($Tasks -match "Office Automatic Updates 2.0") {Disable-ScheduledTask -TaskName "Office Automatic Updates 2.0" -TaskPath "\Microsoft\Office\"}
 			If($Tasks -match "Office ClickToRun Service Monitor") {Disable-ScheduledTask -TaskName "Office ClickToRun Service Monitor" -TaskPath "\Microsoft\Office\"}
@@ -244,9 +247,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "MicrosoftEdgeUpdateBrowserReplacement") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateBrowserReplacementTask"}
 			#====================---------- Applications ----------====================#
 			If($Tasks -match "Adobe Acrobat Update Task") {Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task"}
-			$SentinelOne1 = "AutoRepair" + "*"
-			$SentinelOneAutoRepair = Get-ScheduledTask -TaskName $SentinelOne1
-			If($Tasks -match "AutoRepair") {Disable-ScheduledTask $SentinelOneAutoRepair}
+			If($Tasks -match "AutoRepair") {Get-ScheduledTask -TaskName "AutoRepair*" -TaskPath "\Sentinel\" | Disable-ScheduledTask}
 	} Else {Write-Output "Disable Tasks Disabled"}
 
 #Setting System Registry Keys

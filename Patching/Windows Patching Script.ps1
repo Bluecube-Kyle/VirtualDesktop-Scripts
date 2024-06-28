@@ -84,7 +84,7 @@ If($Script:IncludeOfficeUpdates -eq $null) {
 	$Script:IncludeOfficeUpdates = Read-Host -Prompt "Update Office apps. 0 to Deny 1 to Include"
 	Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = $Script:IncludeOfficeUpdates"
 	Clear}	
-If($Script:ServicesWindowsUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ServicesWindowsUpdates = UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS"}	
+If($Script:ServicesWindowsUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ServicesWindowsUpdates = UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS,PushToInstall"}	
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
