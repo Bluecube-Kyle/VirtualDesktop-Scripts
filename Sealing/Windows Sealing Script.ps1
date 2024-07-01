@@ -377,7 +377,7 @@ $Services = Get-Service | Select -Expand Name
 	Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\" -Recurse -Force -ErrorAction SilentlyContinue
 	}
 $MSA = Test-Path "C:\ProgramData\Mimecast\Security Agent"
-	If($MSA)Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs" -Recurse -Force -ErrorAction SilentlyContinue
+	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs" -Recurse -Force -ErrorAction SilentlyContinue}
 
 #Clear BITS Queue
 Write-Output "====================---------- Clear All Bits Queue ----------===================="
