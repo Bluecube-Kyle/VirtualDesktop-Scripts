@@ -37,9 +37,10 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
+$Time = Get-Date -F HH:mm
 $LogPath = "C:\Bluecube\PatchingLogs\$Date\"
 $ConfigPath = "C:\Bluecube\Configs\"
-$Log = "$ENV:ComputerName - Patching"
+$Log = "$ENV:ComputerName - $Time"
 $Installs = "C:\Bluecube\Installers"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath} 
 	If(!(Test-Path -PathType container $Installs)) {New-Item -ItemType Directory -Path $Installs} 

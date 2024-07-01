@@ -24,11 +24,12 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
+$Time = Get-Date -F HH:mm
 $LogPath = "C:\Bluecube\SealingLogs\$Date\"
 $ConfigPath = "C:\Bluecube\Configs\"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath}
 	If(!(Test-Path -PathType Container $ConfigPath)) {New-Item -ItemType Directory -Path $ConfigPath}
-$Log = "$ENV:ComputerName - Sealing"	
+$Log = "$ENV:ComputerName - $Time"	
 	
 	
 #Create Config file 
@@ -94,7 +95,7 @@ $global:CurrentTask = 0
 $global:TotalTasks = 16
 
 Function SealingImage {
-Start-Transcript -Append -Path "$LogPath$Log.log" 
+Start-Transcript -Append -Path "$LogPath$Log - Sealing.log" 
 #Update Defender Definitions
 Write-Output "====================---------- Defender Definitions Update ----------===================="
 Write-Output ""
