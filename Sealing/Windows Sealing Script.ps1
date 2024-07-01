@@ -172,7 +172,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "Diagnostics") {Disable-ScheduledTask -TaskName "Diagnostics" -TaskPath "\Microsoft\Windows\DiskFootprint\"}
 			If($Tasks -match "FamilySafetyMonitor") {Disable-ScheduledTask -TaskName "FamilySafetyMonitor" -TaskPath "\Microsoft\Windows\Shell\"}
 			If($Tasks -match "FamilySafetyRefreshTask") {Disable-ScheduledTask -TaskName "FamilySafetyRefreshTask" -TaskPath "\Microsoft\Windows\Shell\"}
-			#If($Tasks -match "maintenancetasks") {Disable-ScheduledTask -TaskName "maintenancetasks" -TaskPath "\Microsoft\Windows\capabilityaccessmanager\"}
+			If($Tasks -match "maintenancetasks") {Disable-ScheduledTask -TaskName "maintenancetasks" -TaskPath "\Microsoft\Windows\capabilityaccessmanager\"}
 			If($Tasks -match "ProcessMemoryDiagnosticEvents") {Disable-ScheduledTask -TaskName "ProcessMemoryDiagnosticEvents" -TaskPath "Microsoft\Windows\MemoryDiagnostic"}
 			If($Tasks -match "MaintenanceTasks") {Disable-ScheduledTask -TaskName "MaintenanceTasks" -TaskPath "\Microsoft\Windows\StateRepository\"}
 			If($Tasks -match "MapsToastTask") {Disable-ScheduledTask -TaskName "MapsToastTask" -TaskPath "\Microsoft\Windows\Maps\"}
@@ -335,7 +335,7 @@ Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser
 Write-Output "====================---------- Reset System Performance Counters ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
-	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force -PassThru}
+	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force}
 	& "c:\windows\system32\lodctr" /R
 	& "c:\windows\sysWOW64\lodctr" /R
 	WinMgmt /RESYNCPERF
@@ -345,7 +345,7 @@ Write-Output "====================---------- Clear Software Distribution Folder 
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing SoftwareDistribution Folder" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 $SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
-	If($Services -match "Wuauserv") {Stop-Service Wuauserv -Force -PassThru}
+	If($Services -match "Wuauserv") {Stop-Service Wuauserv -Force}
 	If($SoftwareDistribution -eq $true) {Remove-Item -Path "C:\Windows\SoftwareDistribution" -Force -Recurse}
 
 #Reset Windows Search Index
@@ -363,17 +363,26 @@ $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
 
-#Clear Users accounts Appdata
-Write-Output "====================---------- Clear All User AppData ----------===================="
+#Clear Unecessary Data
+Write-Output "====================---------- Clear Unecessary Data ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Appdata Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
+Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
 Remove-Item -Path "C:\Users\*\AppData" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+
+$Services = Get-Service | Select -Expand Name
+	If($Services -Match "CtxProfile") {
+	Get-service -Name CtxProfile | Stop-Service 
+	Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\" -Recurse -Force -ErrorAction SilentlyContinue
+	}
+$MSA = Test-Path "C:\ProgramData\Mimecast\Security Agent"
+	If($MSA)Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs" -Recurse -Force -ErrorAction SilentlyContinue
 
 #Clear BITS Queue
 Write-Output "====================---------- Clear All Bits Queue ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clear BITS Queue" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
-
 bitsadmin.exe /reset /allusers
 
 #Extend Windows Activation Prompt
