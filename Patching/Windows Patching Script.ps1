@@ -76,6 +76,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
+Clear
 If($Script:ExcludedUpdates -eq $null) {
 	Write-Output "Exclude these KB's from updates"
 	$Script:ExcludedUpdates = Read-Host -Prompt "Enter the full KB Id of patch to excluded seperated by a comma for multiple. Leave empty for no exclusions"
@@ -85,6 +86,10 @@ If($Script:IncludeOfficeUpdates -eq $null) {
 	$Script:IncludeOfficeUpdates = Read-Host -Prompt "Update Office apps. 0 to Deny 1 to Include"
 	Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = $Script:IncludeOfficeUpdates"
 	Clear}	
+If($Script:ClearLogs -eq $null) {
+	$Script:ClearLogs = Read-Host -Prompt "Clear Logs on Seal - Enter 1 else leave blank"
+	Add-Content -Path $ConfigFile -Value "ClearLogs = $Script:ClearLogs"
+	Clear}		
 If($Script:ServicesWindowsUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ServicesWindowsUpdates = UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS,PushToInstall"}	
 
 #Acquire all Variable stored in file
@@ -419,9 +424,11 @@ Write-Output "Disk Cleanup cleared unecessary files"
 #--------------------Event Logs--------------------#
 #Clear Event Logs for Application, Security and System
 Write-Progress -Activity "DiskCleanup" -Status "EventLog Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+If($Script:ClearLogs -eq "1") {
 $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
+} Else {Write-Output "Clear Logs on Seal Disabled"}
 
 #--------------------WinSxS Cleanup--------------------#
 #First checks the WinSxS store size and will run cleanup based on if it is recommended or not
