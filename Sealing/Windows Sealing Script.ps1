@@ -50,6 +50,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
+Clear
 If($Script:DomainControllers -eq $null) {
 	Write-Output "Enter the name of DomainControllers in quotations"
 	Write-Output 'Example: "Bluecube-DC01 Bluecube-DC02"'
@@ -79,6 +80,10 @@ If($Script:Rearm -eq $null) {
 If($Script:VirtualDesktopType -eq $null) {
 	$Script:VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 	Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $Script:VirtualDesktopType"
+	Clear}
+If($Script:ClearLogs -eq $null) {
+	$Script:ClearLogs = Read-Host -Prompt "Clear Logs on Seal - Enter 1 else leave blank"
+	Add-Content -Path $ConfigFile -Value "ClearLogs = $Script:ClearLogs"
 	Clear}		
 If($Script:AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
 If($Script:ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}
@@ -360,9 +365,11 @@ Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Win
 Write-Output "====================---------- Clear All Event Logs ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1 
+If($Script:ClearLogs -eq "1") {
 $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
+} Else {Write-Output "Clear Logs on Seal Disabled"}
 
 #Clear Unecessary Data
 Write-Output "====================---------- Clear Unecessary Data ----------===================="

@@ -142,10 +142,10 @@ $NuGetProvider = Get-PackageProvider -ListAvailable
 Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
 bitsadmin.exe /reset /allusers
 Import-Module PSWindowsUpdate
-Get-WUInstall -MicrosoftUpdate
+Get-WUInstall -MicrosoftUpdate | Out-File -Path "$LogPath$Log - WU KBList.log" 
 Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
-	If($Script:ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll} 
-	Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
+	If($Script:ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll | Out-File -Path "$LogPath$Log - WU KBList.log"}  
+	Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll | Out-File -Path "$LogPath$Log - WU KBList.log"}
 
 #Update Windows Defender Definitions
 Write-Progress -Activity "Windows Updates" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
@@ -419,9 +419,9 @@ Write-Output "Disk Cleanup cleared unecessary files"
 #--------------------Event Logs--------------------#
 #Clear Event Logs for Application, Security and System
 Write-Progress -Activity "DiskCleanup" -Status "EventLog Cleanup" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
-$logs = Get-EventLog -List | ForEach-Object {$_.Log}
-$logs | ForEach-Object {Clear-EventLog -LogName $_ }
-Get-EventLog -list
+$Logs = Get-EventLog -List
+Clear-EventLog -LogName $Logs.Log
+Get-Eventlog -List
 
 #--------------------WinSxS Cleanup--------------------#
 #First checks the WinSxS store size and will run cleanup based on if it is recommended or not
