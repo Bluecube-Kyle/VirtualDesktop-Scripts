@@ -6,7 +6,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 }
 
 #Create directory for scripts
-$ScriptPath = "C:\Bluecube\Scripts\"
+$ScriptPath = "C:\VDI Tools\Scripts\"
 	If(!(Test-Path -PathType container $ScriptPath)) {New-Item -ItemType Directory -Path $ScriptPath}
 
 #Script names converted to variables

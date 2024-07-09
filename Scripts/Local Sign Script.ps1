@@ -6,7 +6,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 }
 
 #Directory where scripts are stored
-$Path = "C:\Bluecube\Scripts\"
+$Path = "C:\VDI Tools\Scripts\"
 $Scripts = Get-ChildItem $Path -Filter "*.ps1"
 
 #Look for existing Certificate and delete it

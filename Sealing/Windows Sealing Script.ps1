@@ -1,5 +1,5 @@
 <#
----------------Bluecube Sealing Script V1.5---------------
+---------------Ekco Sealing Script V1.5---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
@@ -12,7 +12,7 @@ Split into 2 functions for PVS or MCS images
 
 
 .LogFile
-C:\Bluecube\SealingLogs\Date\Hostname - Sealing.log
+C:\VDI Tools\SealingLogs\Date\Hostname - Sealing.log
 #>
 
 #Detect if run as admin and if not request elevation
@@ -25,18 +25,18 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
 $Time = Get-Date -F HH:mm
-$LogPath = "C:\Bluecube\SealingLogs\$Date\"
-$ConfigPath = "C:\Bluecube\Configs\"
+$LogPath = "C:\VDI Tools\SealingLogs\$Date\"
+$ConfigPath = "C:\VDI Tools\Configs\"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath}
 	If(!(Test-Path -PathType Container $ConfigPath)) {New-Item -ItemType Directory -Path $ConfigPath}
 $Log = "$ENV:ComputerName - $Time"	
 	
 	
 #Create Config file 
-$ConfigFile = "C:\Bluecube\Configs\SealingConf.txt"
+$ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
 $Config = Test-Path -Path $ConfigFile
 	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Bluecube Sealing Config V1.0---------------#
+Add-Content -Path $ConfigFile -Value "#---------------Ekco Sealing Config V1.0---------------#
 #Created by Kyle Baxter
 
 #Configurable Variable for script execution
@@ -53,7 +53,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 Clear
 If($Script:DomainControllers -eq $null) {
 	Write-Output "Enter the name of DomainControllers in quotations"
-	Write-Output 'Example: "Bluecube-DC01 Bluecube-DC02"'
+	Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
 	$Script:DomainControllers = Read-Host -Prompt "FQDN"
 	Add-Content -Path $ConfigFile -Value "DomainControllers = $Script:DomainControllers"
 	Clear}
@@ -235,6 +235,7 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id
 			If($Tasks -match "Schedule Wake To Work") {Disable-ScheduledTask -TaskName "Schedule Wake To Work" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
 			If($Tasks -match "Reboot_AC") {Disable-ScheduledTask -TaskName "Reboot_AC" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
 			If($Tasks -match "Reboot_Battery") {Disable-ScheduledTask -TaskName "Reboot_Battery" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+			If($Tasks -match "Report Policies") {Disable-ScheduledTask -TaskName "Report Policies" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
 			If($Tasks -match "PerformRemediation") {Disable-ScheduledTask -TaskName "PerformRemediation" -TaskPath "\Microsoft\Windows\WaaSMedic\"}
 			#====================---------- Office Apps ----------====================#
 			If($Tasks -match "Office Automatic Updates 2.0") {Disable-ScheduledTask -TaskName "Office Automatic Updates 2.0" -TaskPath "\Microsoft\Office\"}
@@ -271,6 +272,10 @@ $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
 $RegFireFox = 'HKLM:\SOFTWARE\Policies\Mozilla\FireFox'
 $RegAdobe = 'HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown'
+$WUUX = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+$WUUP = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UpdatePolicy\Settings"
+$TimeStart = (Get-Date).ToString("yyyy-MM-dd") + "T" +((Get-Date).AddHours(-1)).ToString("hh:mm:ss") + "Z"
+$TimeEnd = ((Get-Date).AddYears(1)).ToString("yyyy-MM-dd") + "T12:00:00Z"
 If(!(Test-Path $RegMaint)) {New-Item -Path $RegMaint -Force}
 If(!(Test-Path $RegDisableTaskOffload)) {New-Item -Path $RegDisableTaskOffload -Force}
 If(!(Test-Path $RegDisablePasswordChange)) {New-Item -Path $RegDisablePasswordChange -Force}
@@ -281,6 +286,8 @@ If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
 If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
 If(!(Test-Path $RegFireFox)) {New-Item -Path $RegFireFox -Force}
 If(!(Test-Path $RegAdobe)) {New-Item -Path $RegAdobe -Force}
+If(!(Test-Path $WUUX)) {New-Item -Path $WUUX -Force}
+If(!(Test-Path $WUUP)) {New-Item -Path $WUUP -Force}
 Set-ItemProperty -Path $RegMaint -Name "MaintenanceDisabled" -Value 1 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegDisableTaskOffload -Name "DisableTaskOffload" -Value 1 -Type Dword -Force
 Set-ItemProperty -Path $RegDisablePasswordChange -Name "DisablePasswordChange" -Value 1 -Type Dword -Force
@@ -292,6 +299,16 @@ Set-ItemProperty -Path $RegWu -Name "DisableWindowsUpdateAccess" -Value 1 -Type 
 Set-ItemProperty -Path $RegAu -Name "NoAutoUpdate" -Value 1 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegFireFox -Name "DisableAppUpdate" -Value 1 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegAdobe -Name "bUpdater" -Value 0 -Type Dword -Force -PassThru	
+Set-ItemProperty -Path $WUUX -Name "PauseFeatureUpdatesStartTime" -Type String -Value $TimeStart
+Set-ItemProperty -Path $WUUX -Name "PauseQualityUpdatesStartTime" -Type String -Value $TimeStart
+Set-ItemProperty -Path $WUUX -Name "PauseUpdatesStartTime" -Type String -Value $TimeStart
+Set-ItemProperty -Path $WUUX -Name "PauseFeatureUpdatesEndTime" -Type String -Value $TimeEnd
+Set-ItemProperty -Path $WUUX -Name "PauseQualityUpdatesEndTime" -Type String -Value $TimeEnd
+Set-ItemProperty -Path $WUUX -Name "PauseUpdatesExpiryTime" -Type String -Value $TimeEnd
+Set-ItemProperty -Path $WUUP -Name "PausedFeatureDate" -Type String -Value $TimeStart 
+Set-ItemProperty -Path $WUUP -Name "PausedQualityDate" -Type String -Value $TimeStart 
+Set-ItemProperty -Path $WUUP -Name "PausedFeatureStatus" -Type Dword -Value 1
+Set-ItemProperty -Path $WUUP -Name "PausedQualityStatus" -Type Dword -Value 1
 
 #Adjusts Default Ntuser.Dat settings to set for performance
 Write-Output "====================---------- Adjusting Default NTUser.Dat ----------===================="
