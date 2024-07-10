@@ -16,6 +16,8 @@ $Maintenance = "Windows Maintenance Script"
 $LocalCertSign = "Local Sign Script"
 $Updater = "Update Scripts"
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 #Download Scripts from Github repo
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Sealing/Windows%20Sealing%20Script.ps1" -OutFile $ScriptPath$Seal.ps1
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Patching/Windows%20Patching%20Script.ps1" -OutFile $ScriptPath$Patching.ps1
