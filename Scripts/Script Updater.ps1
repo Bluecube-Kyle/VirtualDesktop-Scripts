@@ -38,7 +38,6 @@ $Scripts = @(
 $Scripts = Get-ChildItem $Scripts -Recurse -Filter *.ps1*
 
 Foreach($Script in $Scripts) {
-	$Path =	$script.Directory
 	$Name = $script.Name
 	$shell = New-Object -comObject WScript.Shell
 	$shortcut = $shell.CreateShortcut("$Desktop\$Name.lnk")

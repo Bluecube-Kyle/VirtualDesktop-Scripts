@@ -6,8 +6,8 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 }
 
 #Directory where scripts are stored
-$Path = "C:\VDI Tools\"
-$Scripts = Get-ChildItem $Path -Filter "*.ps1"
+$Scripts = Get-ChildItem "C:\VDI Tools\" -Filter "*.ps1" -Recurse
+
 
 #Look for existing Certificate and delete it
 Get-ChildItem "Cert:\*" -Recurse | Where-Object {$_.Subject -match "VDI Tools"} | Remove-Item -Recurse -Verbose
@@ -25,4 +25,8 @@ $publisherStore.Close()
 
 #Bind certificate to all .ps1 files in scripts folder
 $codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
-Foreach($Script in $Scripts) {Set-AuthenticodeSignature -FilePath "$Path$Script" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"}
+Foreach($Script in $Scripts) {
+	$Path = $Script.Directory
+	$Name = $Script.Name
+	Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
+}
