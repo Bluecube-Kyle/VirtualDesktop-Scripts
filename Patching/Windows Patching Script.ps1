@@ -34,6 +34,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 	Start-Process Powershell -Verb runAs -ArgumentList $arguments
 	exit
 }
+<#
 
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
@@ -450,7 +451,7 @@ $SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
 	if($SoftwareDistribution -eq $true) {Remove-Item -Path "C:\Windows\SoftwareDistribution" -Force -Recurse}
 	else {Write-Output "SoftwareDistribution Already Cleared"}
 #>
-
+<#
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
 	Foreach($Matches in $Script:ServicesWindowsUpdates) {
@@ -473,6 +474,7 @@ Write-Output "====================---------- End of Disk Cleanup ----------=====
 Stop-Transcript
 }
 
+#>
 #--------------------User Selection Interface--------------------#
 #Interface for user to select what tasks they want the script to action
 Add-Type -AssemblyName System.Windows.Forms
@@ -530,15 +532,8 @@ $result = $form.ShowDialog()
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $listBox.SelectedItems
-	If($x -notmatch "6.") {Invoke-Expression 'CMD /C Start Powershell -Command "C:\Scripts\NoLock.ps1"'}
-	#Adds TotalTasks values if choice is selected. Used for setting the progress bars % per task
-	If($x -match "1.") {$TotalTasks += 13}
-	If($x -match "2.") {$TotalTasks += 2}
-	If($x -match "3.") {$TotalTasks += 9}
-	If($x -match "4.") {$TotalTasks += 3}
-	If($x -match "5.") {$TotalTasks += 7}
-	#Runs each function if its chosen and outputs the results to log file
-	If($x -match "1.") {WindowsUpdates}
+	If($x -notmatch "6.") {Start-Process Powershell -Args "-F C:\VDI Tools\Scripts\NoLock.ps1"}
+	If($x -match "1.") {Start-Process Powershell -Args "-F C:\VDI Tools\Patching\WU OS Updates.ps1"}
 	If($x -match "2.") {OfficeUpdates}
 	If($x -match "3.") {BrowserUpdates}
 	If($x -match "4.") {AdobeUpdates}
