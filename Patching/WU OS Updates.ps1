@@ -7,7 +7,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
-$Time = Get-Date -F HH:mm
+$Time = Get-Date -F HH-mm
 $LogPath = "C:\VDI Tools\PatchingLogs\$Date\"
 $ConfigPath = "C:\VDI Tools\Configs\"
 $Log = "$ENV:ComputerName - $Time"
@@ -15,8 +15,6 @@ $Installs = "C:\VDI Tools\Installers"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath} 
 	If(!(Test-Path -PathType container $Installs)) {New-Item -ItemType Directory -Path $Installs} 
 	If(!(Test-Path -PathType Container $ConfigPath)) {New-Item -ItemType Directory -Path $ConfigPath}
-
-Start-Transcript -Append -Path "$LogPath$Log - WindowsPatching.log" 
 
 #Create Variables File
 $ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
@@ -59,7 +57,7 @@ $CurrentTask = 0
 $PercentComplete = 0
 $TotalTasks = 15
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
+Start-Transcript -Append -Path "$LogPath$Log - WindowsPatching.log" -Force
 Write-Output "====================---------- Start of Windows Patching ----------===================="
 Write-Output ""
 
