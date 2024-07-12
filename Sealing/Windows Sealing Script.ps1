@@ -76,7 +76,8 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	#Runs each function if its chosen and outputs the results to log file	
 	If($x -match "1.") {
 		Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Sealing/Sealer.ps1" -OutFile "C:\VDI Tools\Sealing\Sealer.ps1"
-		Start-Process Powershell -Args '-F "C:\VDI Tools\Sealing\Sealer.ps1"' -Wait}
+		Powershell -F "C:\VDI Tools\Scripts\Local Sign Script.ps1"
+		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
 	If($x -match "2.") {Start-Process $ConfigFile}
 	If($x -match "1.") {
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100

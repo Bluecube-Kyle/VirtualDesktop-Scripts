@@ -90,6 +90,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
     $x = $listBox.SelectedItems
 	If($x -match "1.") {
 		Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Patching/WU%20OS%20Updates.ps1" -OutFile "C:\VDI Tools\Patching\WU OS Updates.ps1"
+		Powershell -F "C:\VDI Tools\Scripts\Local Sign Script.ps1"
 		Powershell -F "C:\VDI Tools\Patching\WU OS Updates.ps1"
 		}
 	If($x -match "6.") {Start-Process $ConfigFile}
