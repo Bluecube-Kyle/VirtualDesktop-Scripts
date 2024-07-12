@@ -58,32 +58,26 @@ If($Script:DomainControllers -eq $null) {
 	Add-Content -Path $ConfigFile -Value "DomainControllers = $Script:DomainControllers"
 	Clear}
 If($Script:HybridAD -eq $null) {
-	$Script:HybridAD = Read-Host -Prompt "Leave HybridAD On Sealing - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "HybridAD = $Script:HybridAD"
+	Add-Content -Path $ConfigFile -Value "HybridAD = 1"
 	Clear}
 If($Script:CorrectServices -eq $null) {
-	$Script:CorrectServices = Read-Host -Prompt "Correct Services for Performance on Sealing - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "CorrectServices = $Script:CorrectServices"
+	Add-Content -Path $ConfigFile -Value "CorrectServices = 1"
 	Clear}
 If($Script:DisableTasks -eq $null) {
-	$Script:DisableTasks = Read-Host -Prompt "Disable Tasks for Performance on Sealing - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "DisableTasks = $Script:DisableTasks"
+	Add-Content -Path $ConfigFile -Value "DisableTasks = 1"
 	Clear}
 If($Script:DefaultUser -eq $null) {
-	$Script:DefaultUser = Read-Host -Prompt "Set NTUser.Dat Performance settings on Sealing - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "DefaultUser = $Script:DefaultUser"
+	Add-Content -Path $ConfigFile -Value "DefaultUser = 1"
 	Clear}	
 If($Script:Rearm -eq $null) {
-	$Script:Rearm = Read-Host -Prompt "Rearm Windows Activation On Sealing - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "Rearm = $Script:Rearm"
+	Add-Content -Path $ConfigFile -Value "Rearm ="
 	Clear}	
 If($Script:VirtualDesktopType -eq $null) {
 	$Script:VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 	Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $Script:VirtualDesktopType"
 	Clear}
 If($Script:ClearLogs -eq $null) {
-	$Script:ClearLogs = Read-Host -Prompt "Clear Logs on Seal - Enter 1 else leave blank"
-	Add-Content -Path $ConfigFile -Value "ClearLogs = $Script:ClearLogs"
+	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
 	Clear}		
 If($Script:AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
 If($Script:ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}

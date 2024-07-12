@@ -55,15 +55,16 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Global Variables.
-$global:CurrentTask = 0
-$global:PercentComplete = 15
+$CurrentTask = 0
+$PercentComplete = 0
+$TotalTasks = 15
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Output "====================---------- Start of Windows Patching ----------===================="
 Write-Output ""
 
 #Start Services needed for updates - Windows Update, Update Orchestrator, Windows Medic Service and Trusted installer.
-Write-Progress -Activity "Windows Updates" -Status "Starting Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Starting Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
 $Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
@@ -85,7 +86,7 @@ Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 
 #Check if the PS module is present or not and install it if not
-Write-Progress -Activity "Windows Updates" -Status "Checking If Module Is Present" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+Write-Progress -Activity "Windows Updates" -Status "Checking If Module Is Present" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $WUModule = Get-Module -ListAvailable
 $NuGetProvider = Get-PackageProvider -ListAvailable
 	If($WUModule -match "PSWIndowsUpdate") {} 
@@ -98,16 +99,16 @@ $NuGetProvider = Get-PackageProvider -ListAvailable
 	}
 
 #Pull Updates list and then install updates list - Pulling first outputs full update options to log before installing
-Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 bitsadmin.exe /reset /allusers
 Import-Module PSWindowsUpdate
 Get-WUInstall -MicrosoftUpdate | Out-File "$LogPath$Log - WU KBList.log" 
-Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 	If($Script:ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU KBList.log"}  
 	Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU KBList.log"}
 
 #Update Windows Defender Definitions
-Write-Progress -Activity "Windows Updates" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+Write-Progress -Activity "Windows Updates" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.exe"
 	If($NativeDefender -eq $true) {
 	& "C:\Program Files\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -DynamicSignatures
@@ -116,33 +117,33 @@ $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.ex
 
 #--------------------INet Framework Queued Items and Update--------------------#
 Write-Output "Inet Framework queued items and updates"
-Write-Progress -Activity "Windows Updates" -Status "Inet2 Execute Queued Items x32" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet2 Execute Queued Items x32" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v2 x32 Queued Items"
 Start-Process "C:\Windows\Microsoft.Net\Framework\v2.0.50727\ngen.exe" -Args "executeQueuedItems" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet2 Execute Queued Items x64" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet2 Execute Queued Items x64" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v2 x64 Queued Items"
 Start-Process "C:\Windows\Microsoft.Net\Framework64\v2.0.50727\ngen.exe" -Args "executeQueuedItems" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet4 Execute Queued Items x32" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet4 Execute Queued Items x32" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v4 x32 Queued Items"
 Start-Process "C:\Windows\Microsoft.Net\Framework\v4.0.30319\ngen.exe" -Args "executeQueuedItems" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet4 Execute Queued Items x64" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet4 Execute Queued Items x64" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v4 x64 Queued Items"
 Start-Process "C:\Windows\Microsoft.Net\Framework64\v4.0.30319\ngen.exe" -Args "executeQueuedItems" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet2 Update x32" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet2 Update x32" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v2 x32 Updating"
 Start-Process "C:\Windows\Microsoft.Net\Framework\v2.0.50727\ngen.exe" -Args "update /force" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet2 Update x64" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet2 Update x64" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v2 x64 Updating"
 Start-Process "C:\Windows\Microsoft.Net\Framework64\v2.0.50727\ngen.exe" -Args "update /force" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet4 Update x32" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet4 Update x32" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v4 x32 Updating"
 Start-Process "C:\Windows\Microsoft.Net\Framework\v4.0.30319\ngen.exe" -Args "update /force" -Wait | Out-Null
-Write-Progress -Activity "Windows Updates" -Status "Inet4 Update x64" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Windows Updates" -Status "Inet4 Update x64" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Write-Output "Inet framework v4 x64 Updating"
 Start-Process "C:\Windows\Microsoft.Net\Framework64\v4.0.30319\ngen.exe" -Args "update /force" -Wait | Out-Null
 
 #Stop Services and then Disable them
-Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
+Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 	Foreach($Matches in $WUServices) {
 		If($Services -match $Matches) {
 			Set-Service $Matches -StartupType Disabled
