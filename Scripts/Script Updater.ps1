@@ -28,13 +28,21 @@ Powershell -F "C:\VDI Tools\Scripts\Local Sign Script.ps1"
 $Desktop = [Environment]::GetFolderPath("Desktop")
 
 #Create desktop shortcuts for all of the scripts
-$Scripts = Get-ChildItem -Path "C:\VDI Tools\" -Recurse -Filter *.ps1*
+$Scripts = @(
+"C:\VDI Tools\Sealing\Windows Sealing Script.ps1"
+"C:\VDI Tools\Patching\Windows Patching Script.ps1"
+"C:\VDI Tools\Maintenance\Windows Maintenance Script.ps1"
+"C:\VDI Tools\Scripts\Script Updater.ps1"
+"C:\VDI Tools\Scripts\Local Sign Script.ps1"
+)
+$Scripts = Get-ChildItem $Scripts -Recurse -Filter *.ps1*
+
 Foreach($Script in $Scripts) {
 	$Path =	$script.Directory
 	$Name = $script.Name
 	$shell = New-Object -comObject WScript.Shell
 	$shortcut = $shell.CreateShortcut("$Desktop\$Name.lnk")
 	$shortcut.TargetPath = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-	$shortcut.Arguments = "-F `"$Path\$Script`""
+	$shortcut.Arguments = "-F `"$Script`""
 	$shortcut.Save()
 }
