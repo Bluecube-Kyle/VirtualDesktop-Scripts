@@ -56,7 +56,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Global Variables.
 $global:CurrentTask = 0
-$global:PercentComplete = 0
+$global:PercentComplete = 15
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Output "====================---------- Start of Windows Patching ----------===================="
