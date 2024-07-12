@@ -533,7 +533,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $listBox.SelectedItems
 	If($x -notmatch "6.") {Start-Process Powershell -Args "-F C:\VDI Tools\Scripts\NoLock.ps1"}
-	If($x -match "1.") {Start-Process Powershell -Args "-F C:\VDI Tools\Patching\WU OS Updates.ps1"}
+	If($x -match "1.") {Start-Process Powershell -Args "-F C:\VDI Tools\Patching\WU OS Updates.ps1" -Wait}
 	If($x -match "2.") {OfficeUpdates}
 	If($x -match "3.") {BrowserUpdates}
 	If($x -match "4.") {AdobeUpdates}
