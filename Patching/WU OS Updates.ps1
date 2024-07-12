@@ -65,9 +65,9 @@ Write-Output ""
 #Start Services needed for updates - Windows Update, Update Orchestrator, Windows Medic Service and Trusted installer.
 Write-Progress -Activity "Windows Updates" -Status "Starting Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100
 $Services = Get-Service
-$Script:ServicesWindowsUpdates = $Script:ServicesWindowsUpdates -Split ","
-$Matches = Select-String $Script:ServicesWindowsUpdates -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $Script:ServicesWindowsUpdates) {
+$WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
+$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
+	Foreach($Matches in $WUServices) {
 		If($Services -match $Matches) {
 			Set-Service $Matches -StartupType Manual
 			Write-Output "Startup of service $Matches set to Manual"
@@ -143,7 +143,7 @@ Start-Process "C:\Windows\Microsoft.Net\Framework64\v4.0.30319\ngen.exe" -Args "
 
 #Stop Services and then Disable them
 Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -PercentComplete $global:PercentComplete ; $global:CurrentTask += 1 ; $global:PercentComplete = ($global:CurrentTask / $TotalTasks) * 100 
-	Foreach($Matches in $Script:ServicesWindowsUpdates) {
+	Foreach($Matches in $WUServices) {
 		If($Services -match $Matches) {
 			Set-Service $Matches -StartupType Disabled
 			Write-Output "Startup of service $Matches set to Disabled"
