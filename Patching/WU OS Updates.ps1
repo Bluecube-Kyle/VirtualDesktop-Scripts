@@ -1,3 +1,14 @@
+<#
+--------------WU OS Patching Script V2.0---------------
+----------------Created by Kyle Baxter----------------
+
+.Synopsis
+Patching Script for windows OS updates 
+
+.Description
+This script is for the installation of windows os updates to a machine autonomously 
+#>
+
 #Detect if run as admin and if not request elevation
 If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 	$arguments = "& '" + $myInvocation.MyCommand.Definition + "'"
@@ -20,7 +31,7 @@ $Installs = "C:\VDI Tools\Installers"
 $ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
 $Config = Test-Path -Path $ConfigFile
 	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Ekco Patching Config V1.0---------------#
+Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#
 #Created by Kyle Baxter
 
 #Configurable Variable for script execution
@@ -41,9 +52,6 @@ If($Script:ExcludedUpdates -eq $null) {
 	Clear}
 If($Script:IncludeOfficeUpdates -eq $null) {
 	Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"
-	Clear}	
-If($Script:ClearLogs -eq $null) {
-	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
 	Clear}		
 
 #Acquire all Variable stored in file
@@ -57,6 +65,9 @@ $CurrentTask = 0
 $PercentComplete = 0
 $TotalTasks = 15
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+#Start of Patching tasks
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Start-Transcript -Append -Path "$LogPath$Log - WindowsPatching.log" -Force
 Write-Output "====================---------- Start of Windows Patching ----------===================="
 Write-Output ""
@@ -77,10 +88,10 @@ Write-Output "Startup of service TrustedInstaller set to Manual"
 $RegWuMedic = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
 $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
-If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc' -Name Start -Value 3 -Force -Passthru}
 If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
 If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
-Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate' -Name DisableWindowsUpdateAccess -Value 0 -Force -Passthru
+If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 3 -Force -Passthru}
+Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -Passthru
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 
 #Check if the PS module is present or not and install it if not
@@ -98,12 +109,18 @@ $NuGetProvider = Get-PackageProvider -ListAvailable
 
 #Pull Updates list and then install updates list - Pulling first outputs full update options to log before installing
 Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+#Clear BITS queue before starting
 bitsadmin.exe /reset /allusers
 Import-Module PSWindowsUpdate
 Get-WUInstall -MicrosoftUpdate | Out-File "$LogPath$Log - WU KBList.log" 
 Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-	If($Script:ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
-	Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
+	If($IncludeOfficeUpdates) {	
+		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+		Else {Install-WindowsUpdate -UpdateType Software -IgnoreReboot -AcceptAll}
+	} Else {
+		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+		Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
+	}
 
 #Update Windows Defender Definitions
 Write-Progress -Activity "Windows Updates" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
@@ -148,20 +165,37 @@ Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -P
 			Write-Output "Startup of service $Matches set to Disabled"
 		} Else {Write-Output "$Matches not present"}
 	}	
-$RegWuMedic = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
-$RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
-$RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
-If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc' -Name Start -Value 4 -Force -Passthru}
-If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
-If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
-Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate' -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
-Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 1 -Force -Passthru
+If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
+Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
+Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
+
+Takeown /f "C:\Windows\System32\Tasks\Microsoft\Windows\WindowsUpdate\" /a /r /D y
+Takeown /f "C:\Windows\System32\Tasks\Microsoft\Windows\UpdateOrchestrator\" /a /r /D y
+Icacls "C:\Windows\System32\Tasks\Microsoft\Windows\WindowsUpdate\" /grant administrators:F /T
+Icacls "C:\Windows\System32\Tasks\Microsoft\Windows\UpdateOrchestrator\" /grant administrators:F /T
 $Tasks = Get-ScheduledTask
+	#====================---------- Windows Updates ----------====================#
+	If($Tasks -match "Scheduled Start") {Disable-ScheduledTask -TaskName "Scheduled Start" -TaskPath "\Microsoft\Windows\WindowsUpdate\"}
+	If($Tasks -match "PlugScheduler") {Disable-ScheduledTask -TaskName "PlugScheduler" -TaskPath "\Microsoft\Windows\WindowsUpdate\RUXIM\"}
+	If($Tasks -match "Schedule Scan") {Disable-ScheduledTask -TaskName "Schedule Scan" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Schedule Scan Static Task") {Disable-ScheduledTask -TaskName "Schedule Scan Static Task" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "UpdateModelTask") {Disable-ScheduledTask -TaskName "UpdateModelTask" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "USO_UxBroker") {Disable-ScheduledTask -TaskName "USO_UxBroker" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Schedule Maintenance Work") {Disable-ScheduledTask -TaskName "Schedule Maintenance Work" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Schedule Work") {Disable-ScheduledTask -TaskName "Schedule Work" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Schedule Wake To Work") {Disable-ScheduledTask -TaskName "Schedule Wake To Work" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Reboot_AC") {Disable-ScheduledTask -TaskName "Reboot_AC" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Reboot_Battery") {Disable-ScheduledTask -TaskName "Reboot_Battery" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "Report Policies") {Disable-ScheduledTask -TaskName "Report Policies" -TaskPath "\Microsoft\Windows\UpdateOrchestrator\"}
+	If($Tasks -match "PerformRemediation") {Disable-ScheduledTask -TaskName "PerformRemediation" -TaskPath "\Microsoft\Windows\WaaSMedic\"}
+	#====================---------- .Net Framework ----------====================#
 	If($Tasks -match ".NET Framework NGEN v4.0.30319") {Disable-ScheduledTask -TaskName ".NET Framework NGEN v4.0.30319" -TaskPath "\Microsoft\Windows\.NET Framework"}
 	If($Tasks -match ".NET Framework NGEN v4.0.30319 64") {Disable-ScheduledTask -TaskName ".NET Framework NGEN v4.0.30319 64" -TaskPath "\Microsoft\Windows\.NET Framework"}
 	If($Tasks -match ".NET Framework NGEN v4.0.30319 Critical") {Disable-ScheduledTask -TaskName ".NET Framework NGEN v4.0.30319 Critical" -TaskPath "\Microsoft\Windows\.NET Framework"}
 	If($Tasks -match ".NET Framework NGEN v4.0.30319 64 Critical") {Disable-ScheduledTask -TaskName ".NET Framework NGEN v4.0.30319 64 Critical" -TaskPath "\Microsoft\Windows\.NET Framework"}
-
 Write-Output ""
 Write-Output "====================---------- End of Windows Patching ----------===================="
 Stop-Transcript
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#End of patching tasks

@@ -1,31 +1,12 @@
 <#
----------------CTS Patching Script V1.3---------------
+--------------Master Patching Script V2.0---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
-Windows Patching Script to automatic monthly patching 
+Master script used for manually patching servers
 
 .Description
-This script will perform automated patching of a number of applications. Upon running this script will prompt a user selection interfacte to choose what tasks are to be completed
-The list of available functions is as follows; Windows Updates, Office Updates, Browser Updates, Adobe Updates and Disk Cleanup of patch files.
-Each task is isolated into its own function and creates its own block inside the log file.
-To complete each task first the required services will be enabled and then disabled at the end -
-	Windows Updates: Imports the PSWIndowsUpdate module and then first runs a get updates command and then an install updates command skipping KB890830. Following Windows updates will update Defender Definitions
-	Microsoft Office Updates: Runs the Click to Run updater with force close of applications. As normal -Wait does not work a loop is created that waits for the process to report up to date before progressing
-	Browser Updates: First checks if that browser is installed by looking for the application.exe / registry keys. If it is present will download the latest online installer and run it silently before removing it.
-For edge specifically installed the latest version does not overwrite the existing version. To resolve this it first kills all edge processes and wipes the directory, then runs the installer.
-Following Installation disables services and ScheduledTasks used to enable automatic elevation and updating of the application
-	Adobe: First checks installed type and then runs the AdobeARM which will update the current Reader version to the latest version. Following update disables manual check for updates.
-	DiskCleanup: Disk Cleanup runs 4 different cleanup tasks. First will set Stateflags for DiskMgr cleanup to clean all options on drive C, Cleans up Windows Event Logs, Analyzes WinSxS store and performs cleanup if windows reports cleanup recommended
-Lastly clears the Software distribution  folder.
-This script does not use an erroraction silent continue conditions as it always checks for its present first before attempting to modify.
-
-.Requirements 
-Requires the PSWIndowsUpdate Module to be installed. This can be done with the following command (Requires changing execution policy)
-Install-Module -Name PSWindowsUpdate -Force
-
-.LogFile
-C:\CTS\UpdateLogs\Hostname - Date - Patching.log
+This script is a control script to manually run individual patching tasks. When running it will download and install the latest version of scripts before running them
 #>
 
 #Detect if run as admin and if not request elevation
@@ -77,6 +58,10 @@ $listBox.SelectionMode = 'MultiExtended'
 #Task Choice list. Each option is a different choice. Options start with a number as it uses a string match to confirm the choices.
 #To add more then 9 options the number format needs changing from 0-9 to 00-99.
 [void] $listBox.Items.Add('1. Windows Updates')
+[void] $listBox.Items.Add('2. Office Updates')
+[void] $listBox.Items.Add('3. Browser Updates')
+[void] $listBox.Items.Add('4. Adobe Updates')
+[void] $listBox.Items.Add('5. Disk Cleanup Updates')
 [void] $listBox.Items.Add('6. Edit Config')
 
 $listBox.Height = 140
@@ -88,12 +73,38 @@ $result = $form.ShowDialog()
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $listBox.SelectedItems
-	If($x -match "1.") {
-		Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Patching/WU%20OS%20Updates.ps1" -OutFile "C:\VDI Tools\Patching\WU OS Updates.ps1"
-		Powershell -F "C:\VDI Tools\Scripts\Local Sign Script.ps1"
-		Powershell -F "C:\VDI Tools\Patching\WU OS Updates.ps1"
-		}
-	If($x -match "6.") {Start-Process $ConfigFile}
+
+	#Create directory for scripts
+	$Paths = @(
+		"C:\VDI Tools\Sealing\"
+		"C:\VDI Tools\Patching\"
+		"C:\VDI Tools\Maintenance\"
+		"C:\VDI Tools\Scripts\"
+	)
+	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
+
+	#Download Live Script files
+	Invoke-WebRequest -Uri "https://github.com/Bluecube-Kyle/VirtualDesktop-Scripts/archive/refs/heads/main.zip" -OutFile "C:\VDI Tools\Scripts.zip"
+	Expand-Archive "C:\VDI Tools\Scripts.zip" -DestinationPath "C:\VDI Tools\" -Force
+	Get-ChildItem -Path "C:\VDI Tools\VirtualDesktop-Scripts-main\Patching\" | Copy-Item -Destination "C:\VDI Tools\Patching\" -Force -Recurse
+	
+	#Directory where scripts are stored
+	$Scripts = Get-ChildItem "C:\VDI Tools\Patching" -Filter "*.ps1" -Recurse
+	#Bind certificate to all .ps1 files in scripts folder
+	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
+	Foreach($Script in $Scripts) {
+		$Path = $Script.Directory
+		$Name = $Script.Name
+		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
+	}
+	
+	#Running Windows OS Updates
+	If($x -match "1.") {Powershell -F "C:\VDI Tools\Patching\WU Office Updates.ps1"}
+	If($x -match "2.") {Powershell -F "C:\VDI Tools\Patching\WU OS Updates.ps1"}
+	If($x -match "3.") {Powershell -F "C:\VDI Tools\Patching\WU Browser Updates.ps1"}
+	If($x -match "4.") {Powershell -F "C:\VDI Tools\Patching\WU Adobe Updates.ps1"}
+	If($x -match "5.") {Powershell -F "C:\VDI Tools\Patching\WU DiskCleanup.ps1"}
+	If($x -match "6.") {Start-Process "C:\VDI Tools\Configs\PatchingConf.txt"}
 	If($x -notmatch "6.") {
 		Write-Progress -Activity "Machine Patching" -Status "Patching Complete. Rebooting in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Restart-Computer -Force
