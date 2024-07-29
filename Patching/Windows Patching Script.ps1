@@ -76,10 +76,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 
 	#Create directory for scripts
 	$Paths = @(
-		"C:\VDI Tools\Sealing\"
 		"C:\VDI Tools\Patching\"
-		"C:\VDI Tools\Maintenance\"
-		"C:\VDI Tools\Scripts\"
 	)
 	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 

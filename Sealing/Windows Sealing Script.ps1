@@ -73,12 +73,28 @@ $result = $form.ShowDialog()
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $x = $listBox.SelectedItems
-	#Runs each function if its chosen and outputs the results to log file	
-	If($x -match "1.") {
-		Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Bluecube-Kyle/VirtualDesktop-Scripts/main/Sealing/Sealer.ps1" -OutFile "C:\VDI Tools\Sealing\Sealer.ps1"
-		Powershell -F "C:\VDI Tools\Scripts\Local Sign Script.ps1"
-		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
-	If($x -match "2.") {Start-Process $ConfigFile}
+	#Create directory for scripts
+	$Paths = @(
+		"C:\VDI Tools\Sealing\"
+	)
+	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
+
+	#Download Live Script files
+	Invoke-WebRequest -Uri "https://github.com/Bluecube-Kyle/VirtualDesktop-Scripts/archive/refs/heads/main.zip" -OutFile "C:\VDI Tools\Scripts.zip"
+	Expand-Archive "C:\VDI Tools\Scripts.zip" -DestinationPath "C:\VDI Tools\" -Force
+	Get-ChildItem -Path "C:\VDI Tools\VirtualDesktop-Scripts-main\Sealing\" | Copy-Item -Destination "C:\VDI Tools\Sealing\" -Force -Recurse
+	
+	#Directory where scripts are stored
+	$Scripts = Get-ChildItem "C:\VDI Tools\Sealing" -Filter "*.ps1" -Recurse
+	#Bind certificate to all .ps1 files in scripts folder
+	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
+	Foreach($Script in $Scripts) {
+		$Path = $Script.Directory
+		$Name = $Script.Name
+		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
+	}
+	If($x -match "1.") {Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"}
+	If($x -match "2.") {Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
 	If($x -match "1.") {
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Shutdown /s /t 1
