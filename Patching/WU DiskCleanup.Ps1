@@ -97,7 +97,7 @@ $CacheDirItemNames | %{$exists = Get-ItemProperty -Path "$VolumeCachesRegDir\$_"
 	else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
 	
 #Run DismMgr with arguments for Stateflage option 1 and only run on SystemDrive (OS Drive, Almost always C)
-Start-Process CleanMgr -ArgumentList "/sagerun:1 /D %SystemDrive%" -PassThru -NoNewWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+Start-Process CleanMgr -ArgumentList "/sagerun:1 /D C" -PassThru -NoNewWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 Start-Sleep 10
 #Set the task priority for DiskMgr to high - Without this Windows can make it a low priority background task and take a lot longer. Sleep required as DismHost doesn't start right away
 Get-WmiObject Win32_process -filter 'name = "CleanMgr.exe"' | foreach-object { $_.SetPriority(128) }
