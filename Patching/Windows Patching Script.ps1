@@ -85,7 +85,9 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	Invoke-WebRequest -Uri "https://github.com/Bluecube-Kyle/VirtualDesktop-Scripts/archive/refs/heads/main.zip" -OutFile "C:\VDI Tools\Scripts.zip"
 	Expand-Archive "C:\VDI Tools\Scripts.zip" -DestinationPath "C:\VDI Tools\" -Force
 	Get-ChildItem -Path "C:\VDI Tools\VirtualDesktop-Scripts-main\Patching\" | Copy-Item -Destination "C:\VDI Tools\Patching\" -Force -Recurse
-	
+	Remove-Item "C:\VDI Tools\Scripts.zip" -Force
+	Remove-Item "C:\VDI Tools\VirtualDesktop-Scripts-main\" -Recurse -Force
+
 	#Directory where scripts are stored
 	$Scripts = Get-ChildItem "C:\VDI Tools\Patching" -Filter "*.ps1" -Recurse
 	#Bind certificate to all .ps1 files in scripts folder
