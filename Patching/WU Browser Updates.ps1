@@ -119,7 +119,7 @@ $FireFox = Test-Path -Path "C:\Program Files\Mozilla Firefox"
 	Set-ItemProperty -Path $ChromeUpdate -Name "UpdateDefault" -Value 1 -Type Dword -Force -PassThru
 	Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "$Installs\Chrome.exe"
 	Write-Progress -Activity "Browser Updates" -Status "Installing Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Start-Process -FilePath "$Installs\$Installer" -Args "/silent /install" -Verb RunAs -Wait
+	Start-Process -FilePath "$Installs\Chrome.exe" -Args "/silent /install" -Verb RunAs -Wait
 	Remove-Item "$Installs\Chrome.exe"
 	Write-Output "Chrome Updated"
 
