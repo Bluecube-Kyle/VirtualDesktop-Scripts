@@ -113,8 +113,10 @@ $FireFox = Test-Path -Path "C:\Program Files\Mozilla Firefox"
 
 #--------------------Chrome--------------------#
 	If(($Chrome -eq $true) -or ($Chrome64 -eq $true))  {
-	Write-Progress -Activity "Browser Updates" -Status "Downloading Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100	
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update" -Name "UpdateDefault" -Value 1 -Type Dword -Force -PassThru
+	Write-Progress -Activity "Browser Updates" -Status "Downloading Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+	$ChromeUpdate = 'HKLM:\SOFTWARE\Policies\Google\Update'
+		If(!(Test-Path $ChromeUpdate)) {New-Item -Path $ChromeUpdate -Force}	
+	Set-ItemProperty -Path $ChromeUpdate -Name "UpdateDefault" -Value 1 -Type Dword -Force -PassThru
 	Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "$Installs\Chrome.exe"
 	Write-Progress -Activity "Browser Updates" -Status "Installing Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process -FilePath "$Installs\$Installer" -Args "/silent /install" -Verb RunAs -Wait
@@ -123,7 +125,7 @@ $FireFox = Test-Path -Path "C:\Program Files\Mozilla Firefox"
 
 	#Disable Automatic Updater services and tasks - Google adds an MSI code onto Scheduledtasks to try and prevent auto stopping the tasks. The following will acquire the task name and then wildcard for the MSIcode to disable it
 	Write-Progress -Activity "Browser Updates" -Status "Disabling Chrome Services and Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update" -Name "UpdateDefault" -Value 0 -Type Dword -Force -PassThru
+	Set-ItemProperty -Path $ChromeUpdate -Name "UpdateDefault" -Value 0 -Type Dword -Force -PassThru
 	$Services = Get-Service
 	$ScheduledTask = Get-ScheduledTask
 		If($Services -match "gupdate") {Set-Service gupdate -StartupType Disabled -PassThru}
