@@ -115,11 +115,11 @@ Import-Module PSWindowsUpdate
 Get-WUInstall -MicrosoftUpdate | Out-File "$LogPath$Log - WU KBList.log" 
 Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 	If($IncludeOfficeUpdates) {	
-		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU InstalledKBs.log"}  
-		Else {Install-WindowsUpdate -UpdateType Software -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU InstalledKBs.log"}
+		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+		Else {Install-WindowsUpdate -UpdateType Software -IgnoreReboot -AcceptAll}
 	} Else {
-		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU InstalledKBs.log"}  
-		Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll | Out-File "$LogPath$Log - WU InstalledKBs.log"}
+		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+		Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
 	}
 
 #Update Windows Defender Definitions
