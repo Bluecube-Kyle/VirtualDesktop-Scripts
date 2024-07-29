@@ -97,8 +97,8 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	}
 	
 	#Running Windows OS Updates
-	If($x -match "1.") {Powershell -F "C:\VDI Tools\Patching\WU Office Updates.ps1"}
-	If($x -match "2.") {Powershell -F "C:\VDI Tools\Patching\WU OS Updates.ps1"}
+	If($x -match "1.") {Powershell -F "C:\VDI Tools\Patching\WU OS Updates.ps1"}
+	If($x -match "2.") {Powershell -F "C:\VDI Tools\Patching\WU Office Updates.ps1"}
 	If($x -match "3.") {Powershell -F "C:\VDI Tools\Patching\WU Browser Updates.ps1"}
 	If($x -match "4.") {Powershell -F "C:\VDI Tools\Patching\WU Adobe Updates.ps1"}
 	If($x -match "5.") {Powershell -F "C:\VDI Tools\Patching\WU DiskCleanup.ps1"}
