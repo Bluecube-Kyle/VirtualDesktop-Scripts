@@ -115,10 +115,10 @@ $FireFox = Test-Path -Path "C:\Program Files\Mozilla Firefox"
 	If(($Chrome -eq $true) -or ($Chrome64 -eq $true))  {
 	Write-Progress -Activity "Browser Updates" -Status "Downloading Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100	
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update" -Name "UpdateDefault" -Value 1 -Type Dword -Force -PassThru
-	$Installer = "chrome_installer.exe"; Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "$Installs\$Installer"
+	Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "$Installs\Chrome.exe"
 	Write-Progress -Activity "Browser Updates" -Status "Installing Latest Chrome Version" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process -FilePath "$Installs\$Installer" -Args "/silent /install" -Verb RunAs -Wait
-	Remove-Item "$Installs\$Installer "
+	Remove-Item "$Installs\Chrome.exe"
 	Write-Output "Chrome Updated"
 
 	#Disable Automatic Updater services and tasks - Google adds an MSI code onto Scheduledtasks to try and prevent auto stopping the tasks. The following will acquire the task name and then wildcard for the MSIcode to disable it
