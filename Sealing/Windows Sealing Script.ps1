@@ -80,6 +80,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 
 	#Download Live Script files
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	Invoke-WebRequest -Uri "https://github.com/Bluecube-Kyle/VirtualDesktop-Scripts/archive/refs/heads/main.zip" -OutFile "C:\VDI Tools\Scripts.zip"
 	Expand-Archive "C:\VDI Tools\Scripts.zip" -DestinationPath "C:\VDI Tools\" -Force
 	Get-ChildItem -Path "C:\VDI Tools\VirtualDesktop-Scripts-main\Sealing\" | Copy-Item -Destination "C:\VDI Tools\Sealing\" -Force -Recurse
