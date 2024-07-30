@@ -100,11 +100,9 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($x -match "1.") {Powershell -F "C:\VDI Tools\Maintenance\Maint Online Repairs.ps1"}
 	If($x -match "2.") {Powershell -F "C:\VDI Tools\Maintenance\Maint Offline Repairs.ps1"}
 	If($x -match "3.") {Powershell -F "C:\VDI Tools\Maintenance\Maint Performance Adjustments.ps1"}
-	If($x -match "4.") {Powershell -F "C:\VDI Tools\Maintenance\Maint DiskCleanup.ps1"}
+	If($x -match "4.") {Powershell -F "C:\VDI Tools\Maintenance\Maint Disk Cleanup.ps1"}
 	If($x -match "5.") {Powershell -F "C:\VDI Tools\Maintenance\Maint Disk Optimise.ps1"}
-	If($x -notmatch "6.") {
 		Write-Progress -Activity "Machine Maintenance" -Status "Maintenance Complete. Rebooting in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Restart-Computer -Force
-	}
 }
 
