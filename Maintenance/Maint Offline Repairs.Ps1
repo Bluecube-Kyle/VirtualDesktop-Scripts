@@ -123,6 +123,12 @@ Dism /Cleanup-MountPoints
 #--------------------Check Disk Scan and Repair--------------------#
 Write-Output "Chckdisk scan"
 Write-Progress -Activity "Offline System Repair" -Status "Repairing C Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+	Foreach($Matches in $WUServices) {
+		If($Services -match $Matches) {
+			Restart-Service $Matches -Force
+			Write-Output "Service $Matches Restarted"
+		} Else {Write-Output "$Matches not present"}
+	}	
 Get-Volume
 Repair-Volume -FriendlyName OS -OfflineScanAndFix  
 $SystemReserved = Get-Volume
