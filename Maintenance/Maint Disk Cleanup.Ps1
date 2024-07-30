@@ -80,11 +80,9 @@ Write-Output "Disk Cleanup cleared unecessary files"
 #--------------------Event Logs--------------------#
 #Clear Event Logs for Application, Security and System
 Write-Progress -Activity "DiskCleanup" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-If($Script:ClearLogs -eq "1") {
 $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
-} Else {Write-Output "Clear Logs on Seal Disabled"}
 
 #--------------------WinSxS Cleanup--------------------#
 #First checks the WinSxS store size and will run cleanup based on if it is recommended or not
