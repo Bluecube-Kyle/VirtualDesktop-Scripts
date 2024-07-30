@@ -21,7 +21,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
 $Time = Get-Date -F HH-mm
-$LogPath = "C:\VDI Tools\SealingLogs\$Date\"
+$LogPath = "C:\VDI Tools\Logs\Sealing\$Date\"
 $ConfigPath = "C:\VDI Tools\Configs\"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath}
 	If(!(Test-Path -PathType Container $ConfigPath)) {New-Item -ItemType Directory -Path $ConfigPath}

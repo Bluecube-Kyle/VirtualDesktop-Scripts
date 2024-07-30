@@ -19,7 +19,7 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
 $Time = Get-Date -F HH-mm
-$LogPath = "C:\VDI Tools\PatchingLogs\$Date\"
+$LogPath = "C:\VDI Tools\Logs\Patching\$Date\"
 $ConfigPath = "C:\VDI Tools\Configs\"
 $Log = "$ENV:ComputerName - $Time"
 $Installs = "C:\VDI Tools\Installers"
