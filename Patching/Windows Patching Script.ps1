@@ -22,7 +22,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Windows Patching Script v1.3'
+$form.Text = 'Windows Patching Script v2.0'
 $form.Size = New-Object System.Drawing.Size(600,400)
 $form.StartPosition = 'CenterScreen'
 

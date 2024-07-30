@@ -19,40 +19,9 @@ If(-not (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Wind
 #Create Required Directories
 $Date = Get-Date -F yyyy-MM-dd
 $Time = Get-Date -F HH-mm
-$LogPath = "C:\VDI Tools\PatchingLogs\$Date\"
-$ConfigPath = "C:\VDI Tools\Configs\"
+$LogPath = "C:\VDI Tools\Maintenance\$Date\"
 $Log = "$ENV:ComputerName - $Time"
 	If(!(Test-Path -PathType container $LogPath)) {New-Item -ItemType Directory -Path $LogPath} 
-	If(!(Test-Path -PathType Container $ConfigPath)) {New-Item -ItemType Directory -Path $ConfigPath}
-
-#Create Variables File
-$ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
-$Config = Test-Path -Path $ConfigFile
-	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#
-#Created by Kyle Baxter
-
-#Configurable Variable for script execution
-#Toggle settings have a value of 0 or 1 to disable or enable the option"
-}
-
-#Acquire all Variable stored in file
-Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
-    $var = $_.Split('=',2).Trim()
-    Set-Variable -Scope Script -Name $var[0] -Value $var[1]
-}
-
-#Look if required variables are stored
-Clear
-If($Script:ClearLogs -eq $null) {
-	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
-	Clear}		
-
-#Acquire all Variable stored in file
-Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
-    $var = $_.Split('=',2).Trim()
-    Set-Variable -Scope Script -Name $var[0] -Value $var[1]
-}
 
 #Global Variables.
 $CurrentTask = 0
@@ -140,6 +109,14 @@ Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -Percen
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
 Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
+
+#Clear SoftwareDistribution Folder
+Write-Output "====================---------- Clear Software Distribution Folder ----------===================="
+Write-Output ""
+Write-Progress -Activity "DiskCleanup" -Status "Clearing SoftwareDistribution Folder" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+$SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
+	If($Services -match "Wuauserv") {Stop-Service Wuauserv -Force}
+	If($SoftwareDistribution -eq $true) {Remove-Item -Path "C:\Windows\SoftwareDistribution" -Force -Recurse}
 
 Write-Output ""
 Write-Output "====================---------- End of Disk Cleanup ----------===================="

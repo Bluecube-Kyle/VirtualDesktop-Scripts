@@ -1,5 +1,5 @@
 <#
----------------Ekco Sealing Script V1.5---------------
+------------------Sealing Script V2.0---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
@@ -9,10 +9,6 @@ Virtual Desktop Sealing Script to be used as template device
 Sealing script used to remove machine specific configurations and unecessary items to be applied for non persistent virtual desktops.
 Split into 2 functions for PVS or MCS images 
 
-
-
-.LogFile
-C:\VDI Tools\SealingLogs\Date\Hostname - Sealing.log
 #>
 
 #Detect if run as admin and if not request elevation
@@ -28,7 +24,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Image Sealing Script v1.5'
+$form.Text = 'Image Sealing Script v2.0'
 $form.Size = New-Object System.Drawing.Size(600,400)
 $form.StartPosition = 'CenterScreen'
 

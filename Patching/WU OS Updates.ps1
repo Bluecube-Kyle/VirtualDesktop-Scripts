@@ -74,17 +74,6 @@ Write-Output ""
 
 #Start Services needed for updates - Windows Update, Update Orchestrator, Windows Medic Service and Trusted installer.
 Write-Progress -Activity "Windows Updates" -Status "Starting Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-$Services = Get-Service
-$WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
-$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Write-Output "Startup of service $Matches set to Manual"
-		} Else {Write-Output "$Matches not present"}
-	}	
-Set-Service TrustedInstaller -StartupType Manual
-Write-Output "Startup of service TrustedInstaller set to Manual"
 $RegWuMedic = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
 $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
@@ -93,6 +82,19 @@ If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 3 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -Passthru
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
+$Services = Get-Service
+$WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
+$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
+	Foreach($Matches in $WUServices) {
+		If($Services -match $Matches) {
+			Set-Service $Matches -StartupType Manual
+			Restart-Service $Matches -Force
+			Write-Output "Startup of service $Matches set to Manual and Started"
+		} Else {Write-Output "$Matches not present"}
+	}	
+Set-Service TrustedInstaller -StartupType Manual
+Write-Output "Startup of service TrustedInstaller set to Manual"
+
 
 #Check if the PS module is present or not and install it if not
 Write-Progress -Activity "Windows Updates" -Status "Checking If Module Is Present" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
@@ -162,7 +164,8 @@ Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -P
 	Foreach($Matches in $WUServices) {
 		If($Services -match $Matches) {
 			Set-Service $Matches -StartupType Disabled
-			Write-Output "Startup of service $Matches set to Disabled"
+			Stop-Service $Matches -Force
+			Write-Output "Startup of service $Matches set to Disabled and Stopped"
 		} Else {Write-Output "$Matches not present"}
 	}	
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
