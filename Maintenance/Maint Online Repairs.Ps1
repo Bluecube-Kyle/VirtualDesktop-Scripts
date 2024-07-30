@@ -83,7 +83,8 @@ Clear-WindowsCorruptMountPoint
 #--------------------Check Disk Scan and Repair--------------------#
 Write-Output "Chckdisk scan"
 Write-Progress -Activity "Online System Repair" -Status "Repairing C Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Repair-Volume -DriveLetter C -OfflineScanAndFix  
+Get-Volume
+Repair-Volume -FriendlyName OS -OfflineScanAndFix  
 $SystemReserved = Get-Volume
 Write-Progress -Activity "Online System Repair" -Status "Repairing Protected Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 if ($SystemReserved -match "System Reserved") {
