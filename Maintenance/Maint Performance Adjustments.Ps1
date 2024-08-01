@@ -27,7 +27,7 @@ $Log = "$ENV:ComputerName - $Time"
 #Global Variables.
 $CurrentTask = 0
 $PercentComplete = 0
-$TotalTasks = 3
+$TotalTasks = 5
 
 $AutomaticService = "BrokerAgent,WSearch"
 $ManualService = "Bits,DsmSvc,ClickToRunSvc"
@@ -42,7 +42,7 @@ Write-Output ""
 #Disable Services
 Write-Output "====================---------- Disabling Unecessary Services ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 $Services = Get-Service | Select -Expand Name
 $AutomaticService = $AutomaticService -Split ","
 $Matches = Select-String $AutomaticService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
@@ -81,7 +81,7 @@ Write-Output "Startup of service $GoogleUpdaterIntService set to Disabled"
 #Disabled Scheduled Tasks
 Write-Output "====================---------- Disabling Unecessary Tasks ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Takeown /f "C:\Windows\System32\Tasks" /a /r /D y
 Icacls "C:\Windows\System32\Tasks" /grant administrators:F /T
 $Tasks = Get-ScheduledTask
@@ -171,7 +171,7 @@ $Tasks = Get-ScheduledTask
 #Setting System Registry Keys
 Write-Output "====================---------- Applying Registry Settings ----------===================="
 Write-Output ""
-Write-Progress -Activity "Service Corrections" -Status "Adding System RegKeys" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Write-Progress -Activity "Service Corrections" -Status "Adding System RegKeys" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 
 $RegMaint = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance'
 $RegDisableTaskOffload = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
@@ -224,7 +224,7 @@ Set-ItemProperty -Path $WUUP -Name "PausedQualityStatus" -Type Dword -Value 1
 #Adjusts Default Ntuser.Dat settings to set for performance
 Write-Output "====================---------- Adjusting Default NTUser.Dat ----------===================="
 Write-Output ""
-Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Reg Load HKLM\Temp C:\Users\Default\NTUSER.DAT
 	Reg Add "HKLM\Temp\Software\Microsoft\Windows\CurrentVersion\Explorer" /v ShellState /t REG_BINARY /d 240000003C2800000000000000000000 /f
 	Reg Add "HKLM\Temp\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v IconsOnly /t REG_DWORD /d 1 /f
@@ -266,7 +266,7 @@ Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser
 #Reset Performance Counters
 Write-Output "====================---------- Reset System Performance Counters ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force}
 	& "c:\windows\system32\lodctr" /R
 	& "c:\windows\sysWOW64\lodctr" /R
