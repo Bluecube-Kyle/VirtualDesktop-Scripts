@@ -90,7 +90,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Global Variables
 $global:CurrentTask = 0
-$global:TotalTasks = 16
+$global:TotalTasks = 19
 
 Start-Transcript -Append -Path "$LogPath$Log - Sealing.log" 
 #Update Defender Definitions
@@ -121,7 +121,7 @@ If($Script:WinSxSCleanup -eq "1") {
 Write-Output "====================---------- WinSxS Store Cleanup ----------===================="
 Write-Output ""
 
-Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 $RegWuMedic = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
 $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
@@ -146,7 +146,7 @@ Write-Output "Startup of service TrustedInstaller set to Manual"
 Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
 
-Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 	Foreach($Matches in $WUServices) {
 		If($Services -match $Matches) {
 			Set-Service $Matches -StartupType Disabled
