@@ -78,6 +78,9 @@ If($Script:ClearLogs -eq $null) {
 If($Script:AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
 If($Script:ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}
 If($Script:DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+If($Script:WinSxSCleanup -eq $null) {
+	Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
+	Clear}
 
 #Re-Acquire all Variable stored in file. This is necessary to update Service values 
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -112,6 +115,49 @@ Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Setting Time Servers" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
 W32TM /Config /SyncFromFlags:Manual /ManualPeerList:$script:DomainControllers /Update
 Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" -Name NTPServer 
+
+#WinSxS Cleanup
+If($Script:WinSxSCleanup -eq "1") {
+Write-Output "====================---------- WinSxS Store Cleanup ----------===================="
+Write-Output ""
+
+Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+$RegWuMedic = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
+$RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
+$RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
+If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
+If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
+If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 3 -Force -Passthru}
+Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -Passthru
+Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
+$Services = Get-Service
+$WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
+$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
+	Foreach($Matches in $WUServices) {
+		If($Services -match $Matches) {
+			Set-Service $Matches -StartupType Manual
+			Restart-Service $Matches -Force
+			Write-Output "Startup of service $Matches set to Manual and Started"
+		} Else {Write-Output "$Matches not present"}
+	}	
+Set-Service TrustedInstaller -StartupType Manual
+Write-Output "Startup of service TrustedInstaller set to Manual"
+
+Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete (($global:CurrentTask / $global:TotalTasks) * 100) ; $global:CurrentTask += 1
+Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
+
+Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+	Foreach($Matches in $WUServices) {
+		If($Services -match $Matches) {
+			Set-Service $Matches -StartupType Disabled
+			Stop-Service $Matches -Force
+			Write-Output "Startup of service $Matches set to Disabled and Stopped"
+		} Else {Write-Output "$Matches not present"}
+	}		
+If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
+Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
+Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
+}
 
 #Disable Services
 Write-Output "====================---------- Disabling Unecessary Services ----------===================="
