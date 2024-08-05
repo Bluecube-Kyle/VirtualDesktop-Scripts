@@ -75,8 +75,9 @@ If($VirtualDesktopType -eq $null) {
 If($ClearLogs -eq $null) {
 	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
 	Clear}		
-If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,WSearch"}
-If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = Bits,DsmSvc,ClickToRunSvc"}
+If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
+If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
+If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
 If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
 If($WinSxSCleanup -eq $null) {
 	Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
