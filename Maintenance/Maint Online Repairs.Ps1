@@ -90,7 +90,7 @@ Write-Progress -Activity "Online System Repair" -Status "Repairing C Volume" -Id
 		} Else {Write-Output "$Matches not present"}
 	}	
 Get-Volume
-Repair-Volume -FriendlyName OS -OfflineScanAndFix  
+Repair-Volume -DriveLetter C
 $SystemReserved = Get-Volume
 Write-Progress -Activity "Online System Repair" -Status "Repairing Protected Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 if ($SystemReserved -match "System Reserved") {
