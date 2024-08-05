@@ -313,7 +313,7 @@ $RegMaint = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Mainten
 $RegDisableTaskOffload = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
 $RegDisablePasswordChange = 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
 $RegNTFSDisableLastAccessUpdate = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
-$RegDisableLogonAnimation = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+$RedSystemPolicies = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System'
 $RegWSearch = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
@@ -327,7 +327,7 @@ If(!(Test-Path $RegMaint)) {New-Item -Path $RegMaint -Force}
 If(!(Test-Path $RegDisableTaskOffload)) {New-Item -Path $RegDisableTaskOffload -Force}
 If(!(Test-Path $RegDisablePasswordChange)) {New-Item -Path $RegDisablePasswordChange -Force}
 If(!(Test-Path $RegNTFSDisableLastAccessUpdate)) {New-Item -Path $RegNTFSDisableLastAccessUpdate -Force}
-If(!(Test-Path $RegDisableLogonAnimation)) {New-Item -Path $RegDisableLogonAnimation -Force}
+If(!(Test-Path $RedSystemPolicies)) {New-Item -Path $RedSystemPolicies -Force}
 If(!(Test-Path $RegWSearch)) {New-Item -Path $RegWSearch -Force}
 If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
 If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
@@ -339,7 +339,8 @@ Set-ItemProperty -Path $RegMaint -Name "MaintenanceDisabled" -Value 1 -Type Dwor
 Set-ItemProperty -Path $RegDisableTaskOffload -Name "DisableTaskOffload" -Value 1 -Type Dword -Force
 Set-ItemProperty -Path $RegDisablePasswordChange -Name "DisablePasswordChange" -Value 1 -Type Dword -Force
 Set-ItemProperty -Path $RegNTFSDisableLastAccessUpdate -Name "NtfsDisableLastAccessUpdate" -Value 2147483651 -Type Dword -Force
-Set-ItemProperty -Path $RegDisableLogonAnimation -Name "EnableFirstLogonAnimation" -Value 0 -Type Dword -Force
+Set-ItemProperty -Path $RedSystemPolicies -Name "EnableFirstLogonAnimation" -Value 0 -Type Dword -Force
+Set-ItemProperty -Path $RedSystemPolicies -Name "DisableAutomaticRestartSignOn" -Value 1 -Type Dword -Force
 Set-ItemProperty -Path $RegWSearch -Name "AllowCortana" -Value 0 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegWSearch -Name "SetupCompletedSuccessfully" -Value 0 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegWu -Name "DisableWindowsUpdateAccess" -Value 1 -Type Dword -Force -PassThru
