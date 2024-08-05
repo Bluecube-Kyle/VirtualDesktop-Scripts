@@ -88,10 +88,18 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
     Set-Variable -Scope Script -Name $var[0] -Value $var[1]
 }
 
-#Global Variables
+#Variables used for progress bar
 $CurrentTask = 0
 $PercentComplete = 0
-$global:TotalTasks = 19
+$TotalTasks = 9
+	If($HybridAD -eq "1") {$TotalTasks += 1}
+	If($CorrectServices -eq "1") {$TotalTasks += 1}
+	If($DisableTasks -eq "1") {$TotalTasks += 1}
+	If($DefaultUser -eq "1") {$TotalTasks += 1}
+	If($Rearm -eq "1") {$TotalTasks += 1}
+	If($VirtualDesktopType -match "PVS") {$TotalTasks += 1}
+	If($ClearLogs -eq "1") {$TotalTasks += 1}
+	If($WinSxSCleanup -eq "1") {$TotalTasks += 3}
 
 Start-Transcript -Append -Path "$LogPath$Log - Sealing.log" 
 #Update Defender Definitions
@@ -107,8 +115,10 @@ $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.ex
 #Leave Hybrid AD
 Write-Output "====================---------- Leaving Hybrid AD ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Leave Hybrid AD" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	If($HybridAD -eq "1") {Dsregcmd.exe /leave} Else {Write-Output "Leave HybridAD Disabled"}
+	If($HybridAD -eq "1") {
+	Write-Progress -Activity "Sealing Image" -Status "Leave Hybrid AD" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+	Dsregcmd.exe /leave} Else {Write-Output "Leave HybridAD Disabled"
+	} Else {Write-Output "HybridAD Leave Disabled"}
 
 #Set Time Servers
 Write-Output "====================---------- Setting Time Servers to local Domains ----------===================="
@@ -163,8 +173,8 @@ Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
 #Disable Services
 Write-Output "====================---------- Disabling Unecessary Services ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	If($CorrectServices -eq "1") {		
+		Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 		$Services = Get-Service | Select -Expand Name
 		$AutomaticService = $AutomaticService -Split ","
 		$Matches = Select-String $AutomaticService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
@@ -204,8 +214,9 @@ Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -Per
 #Disabled Scheduled Tasks
 Write-Output "====================---------- Disabling Unecessary Tasks ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+
 	If($DisableTasks -eq "1") {
+		Write-Progress -Activity "Sealing Image" -Status "Disabling Scheduled Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 		Takeown /f "C:\Windows\System32\Tasks" /a /r /D y
 		Icacls "C:\Windows\System32\Tasks" /grant administrators:F /T
 		$Tasks = Get-ScheduledTask
@@ -349,8 +360,8 @@ Set-ItemProperty -Path $WUUP -Name "PausedQualityStatus" -Type Dword -Value 1
 #Adjusts Default Ntuser.Dat settings to set for performance
 Write-Output "====================---------- Adjusting Default NTUser.Dat ----------===================="
 Write-Output ""
-Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	If($DefaultUser -eq "1") {
+		Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser.DAT" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 		Reg Load HKLM\Temp C:\Users\Default\NTUSER.DAT
 		Reg Add "HKLM\Temp\Software\Microsoft\Windows\CurrentVersion\Explorer" /v ShellState /t REG_BINARY /d 240000003C2800000000000000000000 /f
 		Reg Add "HKLM\Temp\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v IconsOnly /t REG_DWORD /d 1 /f
@@ -417,8 +428,9 @@ Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Win
 #Clear Event Logs
 Write-Output "====================---------- Clear All Event Logs ----------===================="
 Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+
 If($ClearLogs -eq "1") {
+Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $Logs = Get-EventLog -List
 Clear-EventLog -LogName $Logs.Log
 Get-Eventlog -List
