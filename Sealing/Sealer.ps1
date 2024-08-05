@@ -66,7 +66,7 @@ If($DefaultUser -eq $null) {
 	Add-Content -Path $ConfigFile -Value "DefaultUser = 1"
 	Clear}	
 If($Rearm -eq $null) {
-	Add-Content -Path $ConfigFile -Value "Rearm ="
+	Add-Content -Path $ConfigFile -Value "Rearm = 0"
 	Clear}	
 If($VirtualDesktopType -eq $null) {
 	$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
@@ -117,8 +117,8 @@ Write-Output "====================---------- Leaving Hybrid AD ----------=======
 Write-Output ""
 	If($HybridAD -eq "1") {
 	Write-Progress -Activity "Sealing Image" -Status "Leave Hybrid AD" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Dsregcmd.exe /leave} Else {Write-Output "Leave HybridAD Disabled"
-	} Else {Write-Output "HybridAD Leave Disabled"}
+	Dsregcmd.exe /leave
+	} Else {Write-Output "Leave HybridAD Disabled"}
 
 #Set Time Servers
 Write-Output "====================---------- Setting Time Servers to local Domains ----------===================="
