@@ -32,7 +32,7 @@ $Log = "$ENV:ComputerName - $Time"
 $ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
 $Config = Test-Path -Path $ConfigFile
 	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Ekco Sealing Config V1.0---------------#
+Add-Content -Path $ConfigFile -Value "#---------------Sealing Config V1.0---------------#
 #Created by Kyle Baxter
 
 #Configurable Variable for script execution

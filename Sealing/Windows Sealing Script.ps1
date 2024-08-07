@@ -72,6 +72,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	#Create directory for scripts
 	$Paths = @(
 		"C:\VDI Tools\Sealing\"
+		"C:\VDI Tools\Configs\"
 	)
 	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 
@@ -93,7 +94,61 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
 	}
 	If($x -match "1.") {Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"}
-	If($x -match "2.") {Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
+	If($x -match "2.") {
+	#Create Config file 
+	$ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
+	$Config = Test-Path -Path $ConfigFile
+		If($Config -eq $false){New-Item -Path $ConfigFile
+		Add-Content -Path $ConfigFile -Value "#---------------Sealing Config V1.0---------------#
+#Created by Kyle Baxter
+
+#Configurable Variable for script execution
+#Toggle settings have a value of 1 for enabled. Else blank / 0"
+}
+	#Acquire all Variable stored in file
+	Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
+		$var = $_.Split('=',2).Trim()
+		Set-Variable -Scope Script -Name $var[0] -Value $var[1]
+	}
+
+	#Look if required variables are stored
+	Clear
+	If($DomainControllers -eq $null) {
+		Write-Output "Enter the name of DomainControllers in quotations"
+		Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
+		$DomainControllers = Read-Host -Prompt "FQDN"
+		Add-Content -Path $ConfigFile -Value "DomainControllers = $DomainControllers"
+		Clear }
+	If($HybridAD -eq $null) {
+		Add-Content -Path $ConfigFile -Value "HybridAD = 1"
+		Clear }
+	If($CorrectServices -eq $null) {
+		Add-Content -Path $ConfigFile -Value "CorrectServices = 1"
+		Clear }
+	If($DisableTasks -eq $null) {
+		Add-Content -Path $ConfigFile -Value "DisableTasks = 1"
+		Clear }
+	If($DefaultUser -eq $null) {
+		Add-Content -Path $ConfigFile -Value "DefaultUser = 1"
+		Clear }	
+	If($Rearm -eq $null) {
+		Add-Content -Path $ConfigFile -Value "Rearm = 0"
+		Clear }	
+	If($VirtualDesktopType -eq $null) {
+		$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
+		Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $VirtualDesktopType"
+		Clear }
+	If($ClearLogs -eq $null) {
+		Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
+		Clear }		
+	If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
+	If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
+	If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
+	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+	If($WinSxSCleanup -eq $null) {
+	Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
+	Clear }
+	Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
 	If($x -match "1.") {
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Shutdown /s /t 1
