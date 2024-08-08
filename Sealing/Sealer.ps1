@@ -31,12 +31,12 @@ $Log = "$ENV:ComputerName - $Time"
 #Create Config file 
 $ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
 $Config = Test-Path -Path $ConfigFile
-	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Sealing Config V1.0---------------#
-#Created by Kyle Baxter
-
-#Configurable Variable for script execution
-#Toggle settings have a value of 1 for enabled. Else blank / 0"
+If($Config -eq $false){New-Item -Path $ConfigFile
+	Add-Content -Path $ConfigFile -Value "#---------------Sealing Config V2.0---------------#"
+	Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
+	Add-Content -Path $ConfigFile -Value ""
+	Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
+	Add-Content -Path $ConfigFile -Value "#Toggle settings have a value of 1 for enabled. Else blank / 0"
 }
 
 #Acquire all Variable stored in file
