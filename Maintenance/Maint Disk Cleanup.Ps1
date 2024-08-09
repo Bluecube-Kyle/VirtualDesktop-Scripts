@@ -67,14 +67,7 @@ $CacheDirItemNames | %{$exists = Get-ItemProperty -Path "$VolumeCachesRegDir\$_"
 	else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
 	
 #Run DismMgr with arguments for Stateflage option 1 and only run on SystemDrive (OS Drive, Almost always C)
-Start-Process CleanMgr -ArgumentList "/sagerun:1 /D C" -PassThru -NoNewWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-Start-Sleep 10
-#Set the task priority for DiskMgr to high - Without this Windows can make it a low priority background task and take a lot longer. Sleep required as DismHost doesn't start right away
-Get-WmiObject Win32_process -filter 'name = "CleanMgr.exe"' | foreach-object { $_.SetPriority(128) }
-Get-WmiObject Win32_process -filter 'name = "DismHost.exe"' | foreach-object { $_.SetPriority(128) }
-#Wait for CleanMgr process to end before progressing
-$Processes = Get-Process
-	if ($Processes -Match "CleanMgr") {Wait-Process -Name CleanMgr}
+Start-Process CleanMgr -ArgumentList "/sagerun:1 /D%SystemDrive%" -PassThru -Wait
 Write-Output "Disk Cleanup cleared unecessary files"
 
 #--------------------Event Logs--------------------#
@@ -90,10 +83,7 @@ Write-Progress -Activity "DiskCleanup" -Status "Checking WinSxS Store" -Id 1 -Pe
 $AnalyzeStore = Dism /Online /Cleanup-Image /AnalyzeComponentStore /NoRestart
 $AnalyzeStore #Run Variable alone so its stored in Logfile
 Write-Progress -Activity "DiskCleanup" -Status "Cleaning WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	if ($AnalyzeStore -match "Component Store Cleanup Recommended : Yes") {
-		Write-Output "Cleanup required. Running cleanup"
-		Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart}
-	else {Write-Output "Cleanup not required" }
+Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
 	
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
