@@ -442,7 +442,10 @@ Get-Eventlog -List
 Write-Output "====================---------- Clear Unecessary Data ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Remove-Item -Path "C:\Users\*\AppData" -Recurse -Force -ErrorAction SilentlyContinue
+$Exclude = @("defaultuser*","Public")
+$Users = Get-ChildItem -Path "C:\Users\" -Exclude $Exclude 
+Foreach ($User in $users) {
+Remove-Item "$User\Appdata" -Force -Recurse -ErrorAction SilentlyContinue}
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 
