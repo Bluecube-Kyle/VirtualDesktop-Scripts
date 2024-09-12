@@ -143,6 +143,7 @@ $FireFox64 = Test-Path -Path "C:\Program Files (x86)\Mozilla Firefox"
 	If(($Chrome -eq $true) -or ($Chrome64 -eq $true))  {
 		Write-Progress -Activity "Browser Updates - Chrome" -Status "Enabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 		Stop-Process -Name Chrome -Verbose -Force -ErrorAction SilentlyContinue	
+		Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update\" -Name "UpdateDefault" -Value 1
 		$Services = Get-Service
 		If($Services -match "gupdate") {Set-Service gupdate -StartupType Manual | Start-Service}
 		If($Services -match "gupdatem") {Set-Service gupdatem -StartupType Manual | Start-Service}
@@ -193,6 +194,7 @@ $FireFox64 = Test-Path -Path "C:\Program Files (x86)\Mozilla Firefox"
 			Write-Output "Startup of service $GoogleUpdaterService set to Disabled"
 			Write-Output "Startup of service $GoogleUpdaterIntService set to Disabled"
 			If($Services -match "GoogleChromeElevationService") {Set-Service GoogleChromeElevationService -StartupType Disabled | Stop-Service -Force}
+			Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Google\Update\" -Name "UpdateDefault" -Value 0
 			
 		Stop-Process -Name Chrome -Verbose -Force -ErrorAction SilentlyContinue	
 		} Else { Write-Output "Chrome Not installed. Skipping Update" }
