@@ -80,8 +80,7 @@ Get-Eventlog -List
 #--------------------WinSxS Cleanup--------------------#
 #First checks the WinSxS store size and will run cleanup based on if it is recommended or not
 Write-Progress -Activity "DiskCleanup" -Status "Checking WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-$AnalyzeStore = Dism /Online /Cleanup-Image /AnalyzeComponentStore /NoRestart
-$AnalyzeStore #Run Variable alone so its stored in Logfile
+Dism /Online /Cleanup-Image /AnalyzeComponentStore /NoRestart
 Write-Progress -Activity "DiskCleanup" -Status "Cleaning WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
 	
