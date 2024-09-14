@@ -76,6 +76,15 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	)
 	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 
+	#Check if Proxy Server is present. Disable it for download if it is
+	$ProxyServer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name ProxyServer -ErrorAction SilentlyContinue
+	If ($ProxyServer -ne $null) {
+		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
+		Start-Process "ms-settings:network-proxy"
+		Start-Sleep 2
+		Stop-Process -Name SystemSettings
+	}
+	
 	#Download Live Script files
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	Invoke-WebRequest -Uri "https://github.com/Bluecube-Kyle/VirtualDesktop-Scripts/archive/refs/heads/main.zip" -OutFile "C:\VDI Tools\Scripts.zip"
@@ -83,6 +92,14 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	Get-ChildItem -Path "C:\VDI Tools\VirtualDesktop-Scripts-main\Sealing\" | Copy-Item -Destination "C:\VDI Tools\Sealing\" -Force -Recurse
 	Remove-Item "C:\VDI Tools\Scripts.zip" -Force
 	Remove-Item "C:\VDI Tools\VirtualDesktop-Scripts-main\" -Recurse -Force
+	
+	#Re-Enable Proxy
+	If ($ProxyServer -ne $null) {
+		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
+		Start-Process "ms-settings:network-proxy"
+		Start-Sleep 2
+		Stop-Process -Name SystemSettings
+	}
 	
 	#Directory where scripts are stored
 	$Scripts = Get-ChildItem "C:\VDI Tools\Sealing" -Filter "*.ps1" -Recurse
