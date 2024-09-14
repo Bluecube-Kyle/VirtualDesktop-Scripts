@@ -15,8 +15,8 @@ $Paths = @(
 Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 
 #Check if Proxy Server is present. Disable it for download if it is
-$ProxyServer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name ProxyServer -ErrorAction SilentlyContinue
-If ($ProxyServer -ne $null) {
+$ProxyServer = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name ProxyEnable -ErrorAction SilentlyContinue
+If ($ProxyServer -eq "1") {
 	Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
 	Start-Process "ms-settings:network-proxy"
 	Start-Sleep 2
@@ -32,7 +32,7 @@ Remove-Item "C:\VDI Tools\Scripts.zip" -Force
 Remove-Item "C:\VDI Tools\VirtualDesktop-Scripts-main\" -Recurse -Force
 
 #Re-Enable Proxy
-If ($ProxyServer -ne $null) {
+If ($ProxyServer -ne "1") {
 	Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
 	Start-Process "ms-settings:network-proxy"
 	Start-Sleep 2
