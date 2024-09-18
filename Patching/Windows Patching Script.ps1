@@ -98,8 +98,8 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	Remove-Item "C:\VDI Tools\VirtualDesktop-Scripts-main\" -Recurse -Force
 
 	#Re-Enable Proxy
-	If ($ProxyServer -ne "1") {
-		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
+	If ($ProxyServer -eq "1") {
+		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
 		Start-Process "ms-settings:network-proxy"
 		Start-Sleep 2
 		Stop-Process -Name SystemSettings
