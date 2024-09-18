@@ -99,7 +99,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 
 	#Re-Enable Proxy
 	If ($ProxyServer -eq "1") {
-		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
+		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
 		Start-Process "ms-settings:network-proxy"
 		Start-Sleep 2
 		Stop-Process -Name SystemSettings

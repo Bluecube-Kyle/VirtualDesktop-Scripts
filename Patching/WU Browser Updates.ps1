@@ -213,7 +213,7 @@ $FireFox64 = Test-Path -Path "C:\Program Files (x86)\Mozilla Firefox"
 		$wshell = New-Object -ComObject wscript.shell;
 		$wshell.AppActivate("FireFox")
 		Start-Sleep 1
-		$wshell.SendKeys("About:Settings")
+		$wshell.SendKeys("chrome://browser/content/aboutDialog.xhtml")
 		Start-Sleep 1
 		$wshell.SendKeys("{ENTER}")
 		Start-Sleep 10
@@ -230,7 +230,7 @@ $FireFox64 = Test-Path -Path "C:\Program Files (x86)\Mozilla Firefox"
 		$wshell = New-Object -ComObject wscript.shell;
 		$wshell.AppActivate("FireFox")
 		Start-Sleep 1
-		$wshell.SendKeys("About:Settings")
+		$wshell.SendKeys("chrome://browser/content/aboutDialog.xhtml")
 		Start-Sleep 1
 		$wshell.SendKeys("{ENTER}")
 		Start-Sleep 10
