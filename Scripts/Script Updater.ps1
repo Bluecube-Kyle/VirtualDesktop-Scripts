@@ -32,7 +32,7 @@ Remove-Item "C:\VDI Tools\Scripts.zip" -Force
 Remove-Item "C:\VDI Tools\VirtualDesktop-Scripts-main\" -Recurse -Force
 
 #Re-Enable Proxy
-If ($ProxyServer -ne "1") {
+If ($ProxyServer -eq "1") {
 	Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
 	Start-Process "ms-settings:network-proxy"
 	Start-Sleep 2
