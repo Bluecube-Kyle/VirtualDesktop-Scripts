@@ -1,5 +1,5 @@
 <#
-------------------Sealing Script V2.0---------------
+------------------Sealing Script V2.1---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
@@ -24,7 +24,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Image Sealing Script v2.0'
+$form.Text = 'Image Sealing Script v2.1'
 $form.Size = New-Object System.Drawing.Size(600,400)
 $form.StartPosition = 'CenterScreen'
 
@@ -47,7 +47,7 @@ $form.Controls.Add($CancelButton)
 $label = New-Object System.Windows.Forms.Label
 $label.Location = New-Object System.Drawing.Point(20,40)
 $label.Size = New-Object System.Drawing.Size(560,40)
-$label.Text = 'Select what the machine type is to Seal'
+$label.Text = 'Select what task should be executed'
 $label.Font = New-Object System.Drawing.Font("Cascadia Mono",10,[System.Drawing.FontStyle]::Regular)
 $form.Controls.Add($label)
 
