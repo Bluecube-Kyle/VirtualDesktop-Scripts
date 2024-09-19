@@ -170,14 +170,24 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	$CustomScript = "C:\VDI Tools\Scripts\CustomScripts.ps1"
 		If((Test-Path -Path $CustomScript) -eq $false) {
 		New-Item $CustomScript
-		Add-Content -Path $CustomScript -Value "#---------------Custom Scripts Config---------------#"
-		Add-Content -Path $CustomScript -Value "#Created By Kyle Baxter"
-		Add-Content -Path $CustomScript -Value ""
-		Add-Content -Path $CustomScript -Value "#Include any extra custom scripts that need to be ran here and not by modifying Sealer.ps1"
-		Add-Content -Path $CustomScript -Value "#Custom scripts will run before the main sealing script"
-		Add-Content -Path $CustomScript -Value "#Commands should be added underneath this line and above the SIG"
+		Add-Content -Path $CustomScript -Value '#---------------Custom Scripts Config---------------#'
+		Add-Content -Path $CustomScript -Value '#Created By Kyle Baxter'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value '#Include any extra custom scripts that need to be ran here and not by modifying Sealer.ps1'
+		Add-Content -Path $CustomScript -Value '#Custom scripts will run before the main sealing script'
+		Add-Content -Path $CustomScript -Value '#Commands should be placed inside of the Transcript start and stop'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value '$Date = Get-Date -F yyyy-MM-dd'
+		Add-Content -Path $CustomScript -Value '$Time = Get-Date -F HH-mm'
+		Add-Content -Path $CustomScript -Value '$LogPath = "C:\VDI Tools\Logs\Sealing\$Date\"'
+		Add-Content -Path $CustomScript -Value '$Log = "$ENV:ComputerName - $Time"'
+		Add-Content -Path $CustomScript -Value 'Start-Transcript -Append -Path "$LogPath$Log - CustomScript.log"'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value 'Stop-Transcript'	
 	}
-	
+
 	
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
