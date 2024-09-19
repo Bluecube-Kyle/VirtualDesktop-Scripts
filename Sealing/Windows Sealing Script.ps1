@@ -59,6 +59,7 @@ $listBox.SelectionMode = 'MultiExtended'
 
 [void] $listBox.Items.Add('1. Seal Image')
 [void] $listBox.Items.Add('2. Edit Config')
+[void] $listBox.Items.Add('3. Edit Custom Script Extention')
 
 $listBox.Height = 140
 $form.Controls.Add($listBox)
@@ -110,12 +111,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		$Name = $Script.Name
 		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
 	}
-	If($x -match "1.") {Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"}
-	If($x -match "2.") {
+
 	#Create Config file 
 	$ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
-	$Config = Test-Path -Path $ConfigFile
-		If($Config -eq $false){
+	If((Test-Path -Path $ConfigFile) -eq $false) {
 		New-Item -Path $ConfigFile
 		Add-Content -Path $ConfigFile -Value "#---------------Sealing Config V2.0---------------#"
 		Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
@@ -163,11 +162,34 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
 	If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
 	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
-	If($WinSxSCleanup -eq $null) {
-	Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
+	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
 	Clear }
-	Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
+	Start-Process "C:\VDI Tools\Configs\SealingConf.txt"
+	
+	#Create Custom Script extention file 
+	$CustomScript = "C:\VDI Tools\Scripts\CustomScripts.ps1"
+		If((Test-Path -Path $CustomScript) -eq $false) {
+		New-Item $CustomScript
+		Add-Content -Path $CustomScript -Value "#---------------Custom Scripts Config---------------#"
+		Add-Content -Path $CustomScript -Value "#Created By Kyle Baxter"
+		Add-Content -Path $CustomScript -Value ""
+		Add-Content -Path $CustomScript -Value "#Include any extra custom scripts that need to be ran here and not by modifying Sealer.ps1"
+		Add-Content -Path $CustomScript -Value "#Custom scripts will run before the main sealing script"
+		Add-Content -Path $CustomScript -Value "#Commands should be added underneath this line and above the SIG"
+	}
+	
+	
+	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
+	
+	If($x -match "2.") {Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
+	If($x -match "3.") { 
+		$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
+		Set-AuthenticodeSignature -FilePath $CustomScript -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
+		Start-Process $CustomScript
+	}
 	If($x -match "1.") {
+		Powershell -F $CustomScript
+		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Shutdown /s /t 1
 	}
