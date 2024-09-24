@@ -187,16 +187,14 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Add-Content -Path $CustomScript -Value ''
 		Add-Content -Path $CustomScript -Value 'Stop-Transcript'	
 	}
+	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
+	Set-AuthenticodeSignature -FilePath $CustomScript -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
 
 	
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
 	If($x -match "2.") {Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
-	If($x -match "3.") { 
-		$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
-		Set-AuthenticodeSignature -FilePath $CustomScript -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
-		Start-Process $CustomScript
-	}
+	If($x -match "3.") {Start-Process $CustomScript}
 	If($x -match "1.") {
 		Powershell -F $CustomScript
 		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
