@@ -1,5 +1,5 @@
 <#
---------------Master Patching Script V2.0---------------
+--------------Master Patching Script V2.1---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
@@ -22,7 +22,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Windows Patching Script v2.0'
+$form.Text = 'Windows Patching Script v2.1'
 $form.Size = New-Object System.Drawing.Size(600,400)
 $form.StartPosition = 'CenterScreen'
 
@@ -63,6 +63,7 @@ $listBox.SelectionMode = 'MultiExtended'
 [void] $listBox.Items.Add('4. Adobe Updates')
 [void] $listBox.Items.Add('5. Disk Cleanup Updates')
 [void] $listBox.Items.Add('6. Edit Config')
+[void] $listBox.Items.Add('7. Edit CustomScript Extention')
 
 $listBox.Height = 140
 $form.Controls.Add($listBox)
@@ -77,6 +78,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	#Create directory for scripts
 	$Paths = @(
 		"C:\VDI Tools\Patching\"
+		"C:\VDI Tools\Configs\"
 	)
 	Foreach($Path in $Paths) {If(!(Test-Path -PathType container $Path)) {New-Item -ItemType Directory -Path $Path}}
 
@@ -105,6 +107,55 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Stop-Process -Name SystemSettings
 	}
 
+	#Create Variables File
+	$ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
+	If((Test-Path -Path $ConfigFile) -eq $false) {
+		Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#"
+		Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
+		Add-Content -Path $ConfigFile -Value ""
+		Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
+		Add-Content -Path $ConfigFile -Value "#Toggle settings have a value of 0 or 1 to disable or enable the option"
+		Add-Content -Path $ConfigFile -Value ""
+	}
+
+	#Acquire all Variable stored in file
+	Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
+		$var = $_.Split('=',2).Trim()
+		Set-Variable -Scope Script -Name $var[0] -Value $var[1]
+	}
+
+	#Look if required variables are stored
+	Clear
+	If($Script:ExcludedUpdates -eq $null) {
+		Write-Output "Exclude these KB's from updates"
+		Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="
+		Clear }
+	If($Script:IncludeOfficeUpdates -eq $null) {
+		Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"
+		Clear }		
+
+	#Create Custom Script extention file 
+	$CustomScript = "C:\VDI Tools\Patching\CustomScripts.ps1"
+	If((Test-Path -Path $CustomScript) -eq $false) {
+		New-Item $CustomScript
+		Add-Content -Path $CustomScript -Value '#---------------Custom Scripts Config---------------#'
+		Add-Content -Path $CustomScript -Value '#Created By Kyle Baxter'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value '#Include any extra custom scripts that need to be ran here and not by modifying Patching Scripts'
+		Add-Content -Path $CustomScript -Value '#Custom scripts will run after the main Patching script'
+		Add-Content -Path $CustomScript -Value '#Commands should be placed inside of the Transcript start and stop'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value '$Date = Get-Date -F yyyy-MM-dd'
+		Add-Content -Path $CustomScript -Value '$Time = Get-Date -F HH-mm'
+		Add-Content -Path $CustomScript -Value '$LogPath = "C:\VDI Tools\Logs\Patching\$Date\"'
+		Add-Content -Path $CustomScript -Value '$Log = "$ENV:ComputerName - $Time"'
+		Add-Content -Path $CustomScript -Value 'Start-Transcript -Append -Path "$LogPath$Log - CustomScript.log"'
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value ''
+		Add-Content -Path $CustomScript -Value 'Stop-Transcript'	
+	}
+
 	#Directory where scripts are stored
 	$Scripts = Get-ChildItem "C:\VDI Tools\Patching" -Filter "*.ps1" -Recurse
 	#Bind certificate to all .ps1 files in scripts folder
@@ -121,8 +172,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($x -match "3.") {Powershell -F "C:\VDI Tools\Patching\WU Browser Updates.ps1"}
 	If($x -match "4.") {Powershell -F "C:\VDI Tools\Patching\WU Adobe Updates.ps1"}
 	If($x -match "5.") {Powershell -F "C:\VDI Tools\Patching\WU DiskCleanup.ps1"}
-	If($x -match "6.") {Start-Process "C:\VDI Tools\Configs\PatchingConf.txt"}
-	If($x -notmatch "6.") {
+	If($x -match "6.") {Start-Process $ConfigFile}
+	If($x -match "7.") {Start-Process $CustomScript}
+	If(($x -notmatch "6.") -or ($x -notmatch "7.")) {
+		Powershell -F $CustomScript
 		Write-Progress -Activity "Machine Patching" -Status "Patching Complete. Rebooting in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Restart-Computer -Force
 	}

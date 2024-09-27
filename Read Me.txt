@@ -1,0 +1,64 @@
+#---------------VDI Tools Guide---------------#
+Created by Kyle Baxter
+
+1. How to use
+	* To Install VDI Tools scripts download the "Script Update.ps1" from Technical Operations SharePoint
+	https://ctsint.sharepoint.com/:u:/s/TechnicalOperations/ERrSlpzKlqNLtYl-jAcMvT4BYAOcovt6SeAFd7l-i06p3w?e=Lx7UAd
+	Copy this script to the clients Master Image; Right click and run with Powershell. 
+		If you encounter errors with Execution policy open the script in ISE and then run it manually (This is only necessary once)
+
+	* Once complete 4 desktops shortcuts will appear on the account you are logged in as. 
+		* Windows Sealing Script
+		* Windows Patching Script
+		* Windows Maintenance Script
+		* Script Updater.ps1
+	* To run the chosen script double click it from the desktop and it will prompt for elevation before giving you a multiple choice UI. (At the top of the UI will be a version number. If it is less then 2.* you have not ran the correct script)
+	This UI allows you to select multiple options from the list by holding CTRL or Shift as you select. Additional options may be present for editing Configs or Custom Script Extensions; These can be left alone unless there is client specific configuration needed
+	
+	* After selecting your chosen options and hitting ok the script will begin to execute the chosen tasks create Log files in "C:\VDI Tools\Logs". Once complete it will automatically reboot the machine
+
+	1.1 Using Patching script
+		* When using the patching script complete Windows OS Updates 3 times to ensure there are no outstanding updates or in process installing updates.
+		Following having run OS Updates 3 times complete any of the outstanding options on the 4th run.
+
+		* Before running Browser Updates open the browsers manually and confirm there is no privacy notice or prompts you need to confirm before the browser can be used. 
+			It is necessary to be able to enter manual URL's as patching script runs the updater the same way a user would autonomously. 
+		
+		* Patching Script will create additional Log files that contain the KBList prior to installation. 
+
+2. Configuration
+	* Configuration files are created for both Sealing and Patching scripts. These allow you to adjust the behaviour of the script without modifying the scripts directly. The config files can be accessing manually in "C:\VDI Tools\Configs" or by running the specific script from the desktop
+	and selecting Edit Config option
+	
+	* Patching configurations allows you to exclude specific windows updates. These must be written as KB###### and separated with a comma. Example: KB000000, KB000001 
+	Additionally Office Updates can be disabled in the config as well. This will prevent Windows updates acquiring office updates and deny office click to run from executing if enabled. 
+
+	* Sealing configuration contains a large amount of customisation which are broken down into the following list
+		* DomainControllers 		- Clients Domain controllers. Used in setting desktops time servers
+		* HybridAD			- Removing the device from HybridAD in Azure 
+		* CorrectServices		- Modify the systems windows service startup settings. Note: This users the services specified further in the config
+		* DisableTasks			- Disable Windows Scheduled tasks that are not necessary for a non persistent virtual desktop
+		* DefaultUser			- Modify the default user settings adjusting visual settings for any newly created user. Note: FSLogix profiles will not acquire this config until a new FSLogix profile is created, existing users are unaffected.
+		* Rearm 			- Windows Rearm to extend license activation window
+		* VirtualDesktopType 		- Type of Citrix desktop. This is either a PVS or MCS Image. Note: Seal should not be run on Nerdio AVD Images. 
+		* ClearLogs			- Clear all event logs
+		* AutomaticService		- List of services that will have their startup type set to Automatic. This requires CorrectServices to be enabled
+		* AutomaticDelayedService	- List of services that will have their startup type set to AutomaticDelayed. This requires CorrectServices to be enabled
+		* ManualService			- List of services that will have their startup type set to Manual. This requires CorrectServices to be enabled
+		* DisabledService 		- List of services that will have their startup type set to Disabled. This requires CorrectServices to be enabled
+		* WinSxSCleanup 		- Complete Dism WinSxS store cleanup during seal
+
+	* By default when running a script for the first time it will automatically create and propagate the configs will all the default settings asking only for information that is client specific every time. This includes DomainControllers and VirtualDesktopType.
+
+3. Custom Script Extension
+	* Custom Scripts Extensions can be ran for both Patching and Sealing. These scripts allow you to add in custom scripts that are client specific which do not need to be added into the main scripts. 
+	To access the Custom Script Extension you can either edit it directly or by running the chosen scripts desktop shortcut and choosing the option edit CustomScript Extension.
+	
+	* Custom Scripts are stored in a Powershell script and should be written in Powershell context so it can be properly logged in the transcript.
+
+4. Updates
+	* When running any of the 4 desktop shortcuts they will run a self updating tasks automatically. Each script will only update its specific components and Script Updater will update all components and create a new certificate to sign and validate all scripts. 
+	
+	* Scripts require being version 2.0 or above to have self updating functionality
+
+	

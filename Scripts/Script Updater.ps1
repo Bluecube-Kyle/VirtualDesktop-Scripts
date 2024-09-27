@@ -47,11 +47,10 @@ $Desktop = [Environment]::GetFolderPath("Desktop")
 
 #Create desktop shortcuts for all of the scripts
 $Scripts = @(
-"C:\VDI Tools\Sealing\Windows Sealing Script.ps1"
-"C:\VDI Tools\Patching\Windows Patching Script.ps1"
-"C:\VDI Tools\Maintenance\Windows Maintenance Script.ps1"
-"C:\VDI Tools\Scripts\Script Updater.ps1"
-"C:\VDI Tools\Scripts\Local Sign Script.ps1"
+	"C:\VDI Tools\Sealing\Windows Sealing Script.ps1"
+	"C:\VDI Tools\Patching\Windows Patching Script.ps1"
+	"C:\VDI Tools\Maintenance\Windows Maintenance Script.ps1"
+	"C:\VDI Tools\Scripts\Script Updater.ps1"
 )
 $Scripts = Get-ChildItem $Scripts -Recurse -Filter *.ps1*
 

@@ -101,16 +101,6 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Start-Sleep 2
 		Stop-Process -Name SystemSettings
 	}
-	
-	#Directory where scripts are stored
-	$Scripts = Get-ChildItem "C:\VDI Tools\Sealing" -Filter "*.ps1" -Recurse
-	#Bind certificate to all .ps1 files in scripts folder
-	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
-	Foreach($Script in $Scripts) {
-		$Path = $Script.Directory
-		$Name = $Script.Name
-		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
-	}
 
 	#Create Config file 
 	$ConfigFile = "C:\VDI Tools\Configs\SealingConf.txt"
@@ -121,6 +111,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Add-Content -Path $ConfigFile -Value ""
 		Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
 		Add-Content -Path $ConfigFile -Value "#Toggle settings have a value of 1 for enabled. Else blank / 0"
+		Add-Content -Path $ConfigFile -Value ''
 }
 	#Acquire all Variable stored in file
 	Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -164,11 +155,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
 	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
 	Clear }
-	Start-Process "C:\VDI Tools\Configs\SealingConf.txt"
 	
 	#Create Custom Script extention file 
-	$CustomScript = "C:\VDI Tools\Scripts\CustomScripts.ps1"
-		If((Test-Path -Path $CustomScript) -eq $false) {
+	$CustomScript = "C:\VDI Tools\Sealing\CustomScripts.ps1"
+	If((Test-Path -Path $CustomScript) -eq $false) {
 		New-Item $CustomScript
 		Add-Content -Path $CustomScript -Value '#---------------Custom Scripts Config---------------#'
 		Add-Content -Path $CustomScript -Value '#Created By Kyle Baxter'
@@ -187,18 +177,25 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Add-Content -Path $CustomScript -Value ''
 		Add-Content -Path $CustomScript -Value 'Stop-Transcript'	
 	}
-	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
-	Set-AuthenticodeSignature -FilePath $CustomScript -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
-
 	
+	#Directory where scripts are stored
+	$Scripts = Get-ChildItem "C:\VDI Tools\Sealing" -Filter "*.ps1" -Recurse
+	#Bind certificate to all .ps1 files in scripts folder
+	$codeCertificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=VDI Tools"}
+	Foreach($Script in $Scripts) {
+		$Path = $Script.Directory
+		$Name = $Script.Name
+		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
+	}
+
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
-	If($x -match "2.") {Start-Process "C:\VDI Tools\Configs\SealingConf.txt"}
-	If($x -match "3.") {Start-Process $CustomScript}
 	If($x -match "1.") {
 		Powershell -F $CustomScript
 		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Shutdown /s /t 1
 	}
+	If($x -match "2.") {Start-Process $ConfigFile}
+	If($x -match "3.") {Start-Process $CustomScript}
 }

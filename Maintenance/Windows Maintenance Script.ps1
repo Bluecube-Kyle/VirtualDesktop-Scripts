@@ -60,7 +60,7 @@ $listBox.SelectionMode = 'MultiExtended'
 [void] $listBox.Items.Add('2. System Repairs (Offline)')
 [void] $listBox.Items.Add('3. Service Corrections')
 [void] $listBox.Items.Add('4. Disk Cleanups')
-[void] $listBox.Items.Add('5. Disk Optimisation (MergeBase and MCS ONLY)')
+[void] $listBox.Items.Add('5. Disk Optimisation (MCS ONLY)')
 
 $listBox.Height = 140
 $form.Controls.Add($listBox)
