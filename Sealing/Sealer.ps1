@@ -92,7 +92,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 #Variables used for progress bar
 $CurrentTask = 0
 $PercentComplete = 0
-$TotalTasks = 9
+$TotalTasks = 10
 	If($HybridAD -eq "1") {$TotalTasks += 1}
 	If($CorrectServices -eq "1") {$TotalTasks += 1}
 	If($DisableTasks -eq "1") {$TotalTasks += 1}
@@ -442,12 +442,13 @@ Get-Eventlog -List
 Write-Output "====================---------- Clear Unecessary Data ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+<#
 $Exclude = @("defaultuser*","Public")
 $Users = Get-ChildItem -Path "C:\Users\" -Exclude $Exclude 
-Foreach ($User in $users) {
-Remove-Item "$User\Appdata" -Force -Recurse -ErrorAction SilentlyContinue}
+Foreach ($User in $users) {Remove-Item "$User\Appdata" -Force -Recurse -ErrorAction SilentlyContinue}
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+#>
 
 $Services = Get-Service | Select -Expand Name
 	If($Services -Match "CtxProfile") {
@@ -456,6 +457,12 @@ $Services = Get-Service | Select -Expand Name
 	}
 $MSA = Test-Path "C:\ProgramData\Mimecast\Security Agent"
 	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs" -Recurse -Force -ErrorAction SilentlyContinue}
+
+#Clear Recycle Bin
+Write-Output "====================---------- Clear All Recycle Bin ----------===================="
+Write-Output ""
+Write-Progress -Activity "Sealing Image" -Status "Clear Recycle Bin" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+Clear-RecycleBin -DriveLetter C -Force
 
 #Clear BITS Queue
 Write-Output "====================---------- Clear All Bits Queue ----------===================="
