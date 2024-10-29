@@ -148,7 +148,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 			Add-Content -Path $ConfigFile -Value "SentinelOne = 1"
 			$SentinelOne = 1
 			}
-		else {Add-Content -Path $ConfigFile -Value "SentinelOne = 0"}
+		else {
+			Add-Content -Path $ConfigFile -Value "SentinelOne = 0"
+			$SentinelOne = 0
+			}
 	}
 	
 	#Create Custom Script extention file 
