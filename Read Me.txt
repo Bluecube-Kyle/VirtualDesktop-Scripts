@@ -47,6 +47,7 @@ Created by Kyle Baxter
 		* ManualService			- List of services that will have their startup type set to Manual. This requires CorrectServices to be enabled
 		* DisabledService 		- List of services that will have their startup type set to Disabled. This requires CorrectServices to be enabled
 		* WinSxSCleanup 		- Complete Dism WinSxS store cleanup during seal
+		* SentinelOne 			- If Enabled will run an additional script prior to sealing that will check SentinelOne scan progress. It is imperative that PVS Images not be promoted with InProgress scans. By Default this option will check if SentinelOne is active and self enable on first run.  
 
 	* By default when running a script for the first time it will automatically create and propagate the configs will all the default settings asking only for information that is client specific every time. This includes DomainControllers and VirtualDesktopType.
 
