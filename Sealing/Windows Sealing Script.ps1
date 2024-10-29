@@ -191,7 +191,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
 	If($x -match "1.") {
-		If($SentinelOne = 1) {Powershell -F "C:\VDI Tools\Sealing\SentinelOne ScanProgress.ps1"}
+		If($SentinelOne -eq 1) {Powershell -F "C:\VDI Tools\Sealing\SentinelOne ScanProgress.ps1"}
 		Powershell -F $CustomScript
 		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100
