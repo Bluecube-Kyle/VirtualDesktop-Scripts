@@ -20,7 +20,7 @@ $Date = Get-Date -F yyyy-MM-dd
 $Time = Get-Date -F HH-mm
 $LogPath = "C:\VDI Tools\Logs\Sealing\$Date\"
 $Log = "$ENV:ComputerName - $Time"
-Start-Transcript -Append -Path "$LogPath$Log - CustomScript.log"
+Start-Transcript -Append -Path "$LogPath$Log - SentinelOneScan.log"
 
 #Acquires SentinelOne Install path
 $basePath = "C:\Program Files\SentinelOne\"
