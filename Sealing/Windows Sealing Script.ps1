@@ -82,7 +82,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If ($ProxyServer -eq "1") {
 		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
 		Start-Process "ms-settings:network-proxy"
-		Start-Sleep 2
+		Start-Sleep 10
 		Stop-Process -Name SystemSettings
 	}
 	
@@ -98,7 +98,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If ($ProxyServer -eq "1") {
 		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
 		Start-Process "ms-settings:network-proxy"
-		Start-Sleep 2
+		Start-Sleep 10
 		Stop-Process -Name SystemSettings
 	}
 
@@ -126,35 +126,30 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
 		$DomainControllers = Read-Host -Prompt "FQDN"
 		Add-Content -Path $ConfigFile -Value "DomainControllers = $DomainControllers"
-		Clear }
-	If($HybridAD -eq $null) {
-		Add-Content -Path $ConfigFile -Value "HybridAD = 1"
-		Clear }
-	If($CorrectServices -eq $null) {
-		Add-Content -Path $ConfigFile -Value "CorrectServices = 1"
-		Clear }
-	If($DisableTasks -eq $null) {
-		Add-Content -Path $ConfigFile -Value "DisableTasks = 1"
-		Clear }
-	If($DefaultUser -eq $null) {
-		Add-Content -Path $ConfigFile -Value "DefaultUser = 1"
-		Clear }	
-	If($Rearm -eq $null) {
-		Add-Content -Path $ConfigFile -Value "Rearm = 0"
-		Clear }	
+	}
+	If($HybridAD -eq $null) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
+	If($CorrectServices -eq $null) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
+	If($DisableTasks -eq $null) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
+	If($DefaultUser -eq $null) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
+	If($Rearm -eq $null) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
 	If($VirtualDesktopType -eq $null) {
 		$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 		Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $VirtualDesktopType"
-		Clear }
-	If($ClearLogs -eq $null) {
-		Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
-		Clear }		
+	}
+	If($ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
 	If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
 	If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
 	If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
 	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
-	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
-	Clear }
+	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
+	If($SentineOne -eq $null) {
+		$Process = Get-Process 
+		If($Process -match "SentinelAgent") {
+			Add-Content -Path $ConfigFile -Value "SentinelOne = 1"
+			$SentinelOne = 1
+			}
+		else {Add-Content -Path $ConfigFile -Value "SentinelOne = 0"}
+	}
 	
 	#Create Custom Script extention file 
 	$CustomScript = "C:\VDI Tools\Sealing\CustomScripts.ps1"
@@ -188,9 +183,12 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
 	}
 
+	Clear
+	
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
 	If($x -match "1.") {
+		If($SentinelOne = 1) {Powershell -F "C:\VDI Tools\Sealing\SentinelOne ScanProgress.ps1"}
 		Powershell -F $CustomScript
 		Powershell -F "C:\VDI Tools\Sealing\Sealer.ps1"
 		Write-Progress -Activity "Machine Sealing" -Status "Sealing Complete. Shuting Down in 10s" -Id 1 -PercentComplete 100

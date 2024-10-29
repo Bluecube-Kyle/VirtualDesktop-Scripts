@@ -52,36 +52,23 @@ If($DomainControllers -eq $null) {
 	Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
 	$DomainControllers = Read-Host -Prompt "FQDN"
 	Add-Content -Path $ConfigFile -Value "DomainControllers = $DomainControllers"
-	Clear}
-If($HybridAD -eq $null) {
-	Add-Content -Path $ConfigFile -Value "HybridAD = 1"
-	Clear}
-If($CorrectServices -eq $null) {
-	Add-Content -Path $ConfigFile -Value "CorrectServices = 1"
-	Clear}
-If($DisableTasks -eq $null) {
-	Add-Content -Path $ConfigFile -Value "DisableTasks = 1"
-	Clear}
-If($DefaultUser -eq $null) {
-	Add-Content -Path $ConfigFile -Value "DefaultUser = 1"
-	Clear}	
-If($Rearm -eq $null) {
-	Add-Content -Path $ConfigFile -Value "Rearm = 0"
-	Clear}	
+}
+If($HybridAD -eq $null) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
+If($CorrectServices -eq $null) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
+If($DisableTasks -eq $null) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
+If($DefaultUser -eq $null) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
+If($Rearm -eq $null) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
 If($VirtualDesktopType -eq $null) {
 	$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 	Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $VirtualDesktopType"
-	Clear}
-If($ClearLogs -eq $null) {
-	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
-	Clear}		
+}
+If($ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
 If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
 If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
 If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
 If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
-If($WinSxSCleanup -eq $null) {
-	Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"
-	Clear}
+If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
+Clear
 
 #Re-Acquire all Variable stored in file. This is necessary to update Service values 
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
