@@ -142,7 +142,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
 	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
 	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
-	If($SentineOne -eq $null) {
+	If($SentinelOne -eq $null) {
 		$Process = Get-Process 
 		If($Process -match "SentinelAgent") {
 			Add-Content -Path $ConfigFile -Value "SentinelOne = 1"
@@ -151,7 +151,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		else {
 			Add-Content -Path $ConfigFile -Value "SentinelOne = 0"
 			$SentinelOne = 0
-			}
+		}
 	}
 	
 	#Create Custom Script extention file 
