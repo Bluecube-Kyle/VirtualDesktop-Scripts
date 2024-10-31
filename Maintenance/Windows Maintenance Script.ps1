@@ -82,7 +82,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If ($ProxyServer -eq "1") {
 		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 0
 		Start-Process "ms-settings:network-proxy"
-		Start-Sleep 2
+		Start-Sleep 10
 		Stop-Process -Name SystemSettings
 	}
 
@@ -98,7 +98,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If ($ProxyServer -eq "1") {
 		Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -Value 1
 		Start-Process "ms-settings:network-proxy"
-		Start-Sleep 2
+		Start-Sleep 10
 		Stop-Process -Name SystemSettings
 	}
 
