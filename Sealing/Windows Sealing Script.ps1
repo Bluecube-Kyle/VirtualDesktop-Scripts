@@ -1,5 +1,5 @@
 <#
-------------------Sealing Script V2.1---------------
+------------------Sealing Script V2.2---------------
 ----------------Created by Kyle Baxter----------------
 
 .Synopsis
@@ -24,7 +24,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Image Sealing Script v2.1'
+$form.Text = 'Image Sealing Script v2.2'
 $form.Size = New-Object System.Drawing.Size(600,400)
 $form.StartPosition = 'CenterScreen'
 
