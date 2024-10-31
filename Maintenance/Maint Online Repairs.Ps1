@@ -91,10 +91,9 @@ Write-Progress -Activity "Online System Repair" -Status "Repairing C Volume" -Id
 	}	
 Get-Volume
 Repair-Volume -DriveLetter C
-$SystemReserved = Get-Volume
 Write-Progress -Activity "Online System Repair" -Status "Repairing Protected Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-if ($SystemReserved -match "System Reserved") {
-Repair-Volume -FileSystemLabel "System Reserved" -OfflineScanAndFix}
+$SystemReserved = Get-Volume
+	If($SystemReserved -match "System Reserved") {Repair-Volume -FileSystemLabel "System Reserved" -OfflineScanAndFix}
 
 #--------------------Rebuild Performance Counters--------------------#
 Write-Progress -Activity "Online System Repair" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
