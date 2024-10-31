@@ -70,12 +70,12 @@ Foreach($Matches in $DisabledService) {
 }
 If($DisabledService -match "WaaSMedicSvc") {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc' -Name Start -Value 4 -Force -PassThru}		
 If($DisabledService -match "gupdate") { 
-$GoogleUpdaterService = (Get-Service -DisplayName "GoogleUpdater Service*").Name
-$GoogleUpdaterIntService = (Get-Service -DisplayName "GoogleUpdater InternalService*").Name
-Get-Service -DisplayName "GoogleUpdaterService*" | Set-Service -StartupType Disabled		
-Get-Service -DisplayName "GoogleUpdaterInternalService*" | Set-Service -StartupType Disabled
-Write-Output "Startup of service $GoogleUpdaterService set to Disabled"
-Write-Output "Startup of service $GoogleUpdaterIntService set to Disabled"
+	$GoogleUpdaterService = (Get-Service -DisplayName "GoogleUpdater Service*").Name
+	$GoogleUpdaterIntService = (Get-Service -DisplayName "GoogleUpdater InternalService*").Name
+	Get-Service -DisplayName "GoogleUpdaterService*" | Set-Service -StartupType Disabled		
+	Get-Service -DisplayName "GoogleUpdaterInternalService*" | Set-Service -StartupType Disabled
+	Write-Output "Startup of service $GoogleUpdaterService set to Disabled"
+	Write-Output "Startup of service $GoogleUpdaterIntService set to Disabled"
 }
 		
 #Disabled Scheduled Tasks
