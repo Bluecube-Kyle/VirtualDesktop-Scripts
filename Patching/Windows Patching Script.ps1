@@ -61,9 +61,10 @@ $listBox.SelectionMode = 'MultiExtended'
 [void] $listBox.Items.Add('2. Office Updates')
 [void] $listBox.Items.Add('3. Browser Updates')
 [void] $listBox.Items.Add('4. Adobe Updates')
-[void] $listBox.Items.Add('5. Disk Cleanup Updates')
-[void] $listBox.Items.Add('6. Edit Config')
-[void] $listBox.Items.Add('7. Edit CustomScript Extention')
+[void] $listBox.Items.Add('5. Custom Updates')
+[void] $listBox.Items.Add('6. Disk Cleanup Updates')
+[void] $listBox.Items.Add('7. Edit Config')
+[void] $listBox.Items.Add('8. Edit CustomScript Extention')
 
 $listBox.Height = 140
 $form.Controls.Add($listBox)
@@ -171,11 +172,11 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	If($x -match "2.") {Powershell -F "C:\VDI Tools\Patching\WU Office Updates.ps1"}
 	If($x -match "3.") {Powershell -F "C:\VDI Tools\Patching\WU Browser Updates.ps1"}
 	If($x -match "4.") {Powershell -F "C:\VDI Tools\Patching\WU Adobe Updates.ps1"}
-	If($x -match "5.") {Powershell -F "C:\VDI Tools\Patching\WU DiskCleanup.ps1"}
-	If($x -match "6.") {Start-Process $ConfigFile}
-	If($x -match "7.") {Start-Process $CustomScript}
-	If(($x -notmatch "6.") -or ($x -notmatch "7.")) {
-		Powershell -F $CustomScript
+	If($x -match "5.") {Powershell -F $CustomScript}
+	If($x -match "6.") {Powershell -F "C:\VDI Tools\Patching\WU DiskCleanup.ps1"}
+	If($x -match "7.") {Start-Process $ConfigFile}
+	If($x -match "8.") {Start-Process $CustomScript}
+	If(($x -notmatch "7.") -or ($x -notmatch "8.")) {
 		Write-Progress -Activity "Machine Patching" -Status "Patching Complete. Rebooting in 10s" -Id 1 -PercentComplete 100
 		Start-Sleep 10 ; Restart-Computer -Force
 	}
