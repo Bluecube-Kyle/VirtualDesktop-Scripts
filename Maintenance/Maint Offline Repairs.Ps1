@@ -50,13 +50,13 @@ Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
 $Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Restart-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Manual
+		Restart-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Manual and Started"
+	} Else {Write-Output "$Matches not present"}
+}	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
 
@@ -80,31 +80,31 @@ $OperatingSystem = systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version"
 $OperatingSystem
 Write-Progress -Activity "Offline System Repair" -Status "Downloading OS Iso File" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $ProgressPreference = 'SilentlyContinue'
-	#Dism Repair using local Iso file (Win2016)
-	If($OperatingSystem -match "Windows Server 2016") {
+#Dism Repair using local Iso file (Win2016)
+If($OperatingSystem -match "Windows Server 2016") {
 	Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkID=2195174&clcid=0x409&culture=en-us&country=US" -OutFile "$Installs\WinServer2016.iso"
 	$IsoPath = "$Installs\WinServer2016.iso"
-	}	
-	#Dism Repair using local Iso file (Win2019)
-	If($OperatingSystem -match "Windows Server 2019") {
+}	
+#Dism Repair using local Iso file (Win2019)
+If($OperatingSystem -match "Windows Server 2019") {
 	Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkID=2195167&clcid=0x409&culture=en-us&country=US" -OutFile "$Installs\WinServer2019.iso"	
 	$IsoPath = "$Installs\WinServer2019.iso"	
-	}
-	#Dism Repair using local Iso file (Win2022)
-	If($OperatingSystem -match "Windows Server 2022") {
+}
+#Dism Repair using local Iso file (Win2022)
+If($OperatingSystem -match "Windows Server 2022") {
 	Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkID=2195280&clcid=0x409&culture=en-us&country=US" -OutFile "$Installs\WinServer2022.iso"	
 	$IsoPath = "$Installs\WinServer2022.iso"	
-	}
-	#Dism Repair using local Iso file (Win10 Enterprise)
-	If($OperatingSystem -match "Windows 10 Enterprise") {
+}
+#Dism Repair using local Iso file (Win10 Enterprise)
+If($OperatingSystem -match "Windows 10 Enterprise") {
 	Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkID=2208844&clcid=0x409&culture=en-us&country=US" -OutFile "$Installs\Win10E.iso"	
 	$IsoPath = "$Installs\Win10E.iso"	
-	}
-	#Dism Repair using local Iso file (Win10 Pro)
-	If($OperatingSystem -match "Windows 10 Pro") {
+}
+#Dism Repair using local Iso file (Win10 Pro)
+If($OperatingSystem -match "Windows 10 Pro") {
 	Invoke-WebRequest -Uri "https://www.itechtics.com/?dl_id=173" -OutFile "$Installs\Win10Pro.iso"	
 	$IsoPath = "$Installs\Win10Pro.iso"	
-	}	
+}	
 $ProgressPreference = 'Continue'
 Write-Output "Mounting Iso Image"
 Write-Progress -Activity "Offline System Repair" -Status "Mounting Iso" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
@@ -123,12 +123,12 @@ Dism /Cleanup-MountPoints
 #--------------------Check Disk Scan and Repair--------------------#
 Write-Output "Chckdisk scan"
 Write-Progress -Activity "Offline System Repair" -Status "Repairing C Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Restart-Service $Matches -Force
-			Write-Output "Service $Matches Restarted"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Restart-Service $Matches -Force
+		Write-Output "Service $Matches Restarted"
+	} Else {Write-Output "$Matches not present"}
+}	
 Get-Volume
 Repair-Volume -DriveLetter C  
 $SystemReserved = Get-Volume
@@ -146,13 +146,13 @@ WinMgmt /RESYNCPERF
 #--------------------Stop and Disable Services--------------------#
 Write-Output "Stopping Offline Repair Services"
 Write-Progress -Activity "Offline System Repair" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled
-			Stop-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
-	}		
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Disabled
+		Stop-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Disabled and Stopped"
+	} Else {Write-Output "$Matches not present"}
+}		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
 Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
