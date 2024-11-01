@@ -78,13 +78,13 @@ Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
 $Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Restart-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Manual
+		Restart-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Manual and Started"
+	} Else {Write-Output "$Matches not present"}
+}	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
 
@@ -94,8 +94,7 @@ Write-Progress -Activity "DiskCleanup" -Status "Disk Cleanup" -Id 1 -PercentComp
 $VolumeCachesRegDir = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
 $CacheDirItemNames = Get-ItemProperty "$VolumeCachesRegDir\*" | select -ExpandProperty PSChildName
 $CacheDirItemNames | %{$exists = Get-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name "StateFlags0001" -ErrorAction SilentlyContinue
-	If (($exists -ne $null) -and ($exists.Length -ne 0)) {Set-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 2}
-	else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
+If (($exists -ne $null) -and ($exists.Length -ne 0)) {Set-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 2} else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
 	
 #Run DismMgr with arguments for Stateflage option 1 and only run on SystemDrive (OS Drive, Almost always C)
 Start-Process CleanMgr -ArgumentList "/sagerun:1 /D C" -PassThru -NoNewWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -105,16 +104,16 @@ Get-WmiObject Win32_process -filter 'name = "CleanMgr.exe"' | foreach-object { $
 Get-WmiObject Win32_process -filter 'name = "DismHost.exe"' | foreach-object { $_.SetPriority(128) }
 #Wait for CleanMgr process to end before progressing
 $Processes = Get-Process
-	if ($Processes -Match "CleanMgr") {Wait-Process -Name CleanMgr}
+If($Processes -Match "CleanMgr") {Wait-Process -Name CleanMgr}
 Write-Output "Disk Cleanup cleared unecessary files"
 
 #--------------------Event Logs--------------------#
 #Clear Event Logs for Application, Security and System
 Write-Progress -Activity "DiskCleanup" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 If($Script:ClearLogs -eq "1") {
-$Logs = Get-EventLog -List
-Clear-EventLog -LogName $Logs.Log
-Get-Eventlog -List
+	$Logs = Get-EventLog -List
+	Clear-EventLog -LogName $Logs.Log
+	Get-Eventlog -List
 } Else {Write-Output "Clear Logs on Seal Disabled"}
 
 #--------------------WinSxS Cleanup--------------------#
@@ -123,20 +122,20 @@ Write-Progress -Activity "DiskCleanup" -Status "Checking WinSxS Store" -Id 1 -Pe
 $AnalyzeStore = Dism /Online /Cleanup-Image /AnalyzeComponentStore /NoRestart
 $AnalyzeStore #Run Variable alone so its stored in Logfile
 Write-Progress -Activity "DiskCleanup" -Status "Cleaning WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	if ($AnalyzeStore -match "Component Store Cleanup Recommended : Yes") {
-		Write-Output "Cleanup required. Running cleanup"
-		Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart}
-	else {Write-Output "Cleanup not required" }
+If($AnalyzeStore -match "Component Store Cleanup Recommended : Yes") {
+	Write-Output "Cleanup required. Running cleanup"
+	Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
+} else {Write-Output "Cleanup not required" }
 	
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled
-			Stop-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
-	}		
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Disabled
+		Stop-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Disabled and Stopped"
+	} Else {Write-Output "$Matches not present"}
+}		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
 Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru
