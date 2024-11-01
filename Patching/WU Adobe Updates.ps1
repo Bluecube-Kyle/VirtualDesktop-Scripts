@@ -41,7 +41,7 @@ Write-Progress -Activity "Adobe Updates" -Status "Updating Adobe Applications" -
 $AdobeX32 = Test-Path -Path "C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"
 $AdobeX64 = Test-Path -Path "C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
 #Both 32 and 64bit Adobe use the same location to store the updater exe so if either are true run it
-	if(($AdobeX32 -eq $true) -or ($AdobeX64 -eq $true)) {
+If(($AdobeX32 -eq $true) -or ($AdobeX64 -eq $true)) {
 	Write-Progress -Activity "Adobe Updates" -Status "Running Adobe Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown" -Name "bUpdater" -Value 1 -Type Dword -Force -PassThru
 	Start-Process "C:\Program Files (x86)\Common Files\Adobe\ARM\1.0\AdobeARM.exe" -Wait 
@@ -51,11 +51,11 @@ $AdobeX64 = Test-Path -Path "C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.e
 	Write-Progress -Activity "Adobe Updates" -Status "Disabling Adobe Services and Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Services = Get-Service
 	$ScheduledTask = Get-ScheduledTask
-		if($Services -match "AdobeARMservice") {Set-Service AdobeARMservice -StartupType Disabled -PassThru}
-		if($ScheduledTask -match "Adobe Acrobat Update Task") {Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task"}
+	If($Services -match "AdobeARMservice") {Set-Service AdobeARMservice -StartupType Disabled -PassThru}
+	If($ScheduledTask -match "Adobe Acrobat Update Task") {Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task"}
 	#Disable Manual Updates in App
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown" -Name "bUpdater" -Value 0 -Type Dword -Force -PassThru	
-	} else {Write-Output "Adobe Reader not Present"}
+} else {Write-Output "Adobe Reader not Present"}
 
 Write-Output ""
 Write-Output "====================---------- End of Adobe Patching ----------===================="

@@ -44,9 +44,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Look if required variables are stored
 Clear
-If($Script:ClearLogs -eq $null) {
-	Add-Content -Path $ConfigFile -Value "ClearLogs = 1"
-	Clear}		
+If($Script:ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {

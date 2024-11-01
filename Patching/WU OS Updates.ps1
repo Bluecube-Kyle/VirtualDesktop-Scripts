@@ -30,12 +30,13 @@ $Installs = "C:\VDI Tools\Installers"
 #Create Variables File
 $ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
 $Config = Test-Path -Path $ConfigFile
-	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#
-#Created by Kyle Baxter
-
-#Configurable Variable for script execution
-#Toggle settings have a value of 0 or 1 to disable or enable the option"
+If($Config -eq $false){
+	New-Item -Path $ConfigFile
+	Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#"
+	Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
+	Add-Content -Path $ConfigFile -Value ""
+	Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
+	Add-Content -Path $ConfigFile -Value "#Toggle settings have a value of 0 or 1 to disable or enable the option"
 }
 
 #Acquire all Variable stored in file
@@ -46,13 +47,8 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Look if required variables are stored
 Clear
-If($Script:ExcludedUpdates -eq $null) {
-	Write-Output "Exclude these KB's from updates"
-	Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="
-	Clear}
-If($Script:IncludeOfficeUpdates -eq $null) {
-	Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"
-	Clear}		
+If($Script:ExcludedUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
+If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -85,13 +81,13 @@ Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
 $Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Restart-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Manual
+		Restart-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Manual and Started"
+	} Else {Write-Output "$Matches not present"}
+}	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
 
@@ -100,14 +96,14 @@ Write-Output "Startup of service TrustedInstaller set to Manual"
 Write-Progress -Activity "Windows Updates" -Status "Checking If Module Is Present" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $WUModule = Get-Module -ListAvailable
 $NuGetProvider = Get-PackageProvider -ListAvailable
-	If($WUModule -match "PSWIndowsUpdate") {} 
+If($WUModule -match "PSWIndowsUpdate") {} 
+else {
+	If($NuGetProvider -match "NuGet") {Install-Module PSWindowsUpdate -Force}
 	else {
-		If($NuGetProvider -match "NuGet") {Install-Module PSWindowsUpdate -Force}
-		else {
 		Install-PackageProvider -Name NuGet -Force
 		Install-Module PSWindowsUpdate -Force
-		}
 	}
+}
 
 #Pull Updates list and then install updates list - Pulling first outputs full update options to log before installing
 Write-Progress -Activity "Windows Updates" -Status "Checking For Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
@@ -116,21 +112,21 @@ bitsadmin.exe /reset /allusers
 Import-Module PSWindowsUpdate
 Get-WUInstall -MicrosoftUpdate | Out-File "$LogPath$Log - WU KBList.log" 
 Write-Progress -Activity "Windows Updates" -Status "Installing Updates" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-	If($IncludeOfficeUpdates) {	
-		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
-		Else {Install-WindowsUpdate -UpdateType Software -IgnoreReboot -AcceptAll}
-	} Else {
-		If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
-		Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
-	}
+If($IncludeOfficeUpdates) {	
+	If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+	Else {Install-WindowsUpdate -UpdateType Software -IgnoreReboot -AcceptAll}
+} Else {
+	If($ExcludedUpdates) {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -NotKBArticleID $Script:ExcludedUpdates -IgnoreReboot -AcceptAll}  
+	Else {Install-WindowsUpdate -UpdateType Software -MicrosoftUpdate -IgnoreReboot -AcceptAll}
+}
 
 #Update Windows Defender Definitions
 Write-Progress -Activity "Windows Updates" -Status "Updating Defender Definitions" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $NativeDefender = Test-Path -Path "C:\Program Files\Windows Defender\MpCmdRun.exe"
-	If($NativeDefender -eq $true) {
+If($NativeDefender -eq $true) {
 	& "C:\Program Files\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -DynamicSignatures
 	& "C:\Program Files\Windows Defender\MpCmdRun.exe" -SignatureUpdate
-	} else { Write-Output "Native Defender Not Presetn. Skipping Definition Update"}
+} else { Write-Output "Native Defender Not Presetn. Skipping Definition Update"}
 
 #--------------------INet Framework Queued Items and Update--------------------#
 Write-Output "Inet Framework queued items and updates"
@@ -161,13 +157,13 @@ Start-Process "C:\Windows\Microsoft.Net\Framework64\v4.0.30319\ngen.exe" -Args "
 
 #Stop Services and then Disable them
 Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled
-			Stop-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Disabled
+		Stop-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Disabled and Stopped"
+	} Else {Write-Output "$Matches not present"}
+}	
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
 Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru

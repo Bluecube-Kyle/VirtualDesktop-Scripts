@@ -267,10 +267,10 @@ Write-Progress -Activity "Service Corrections" -Status "Adjusting Default NTUser
 Write-Output "====================---------- Reset System Performance Counters ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force}
-	& "c:\windows\system32\lodctr" /R
-	& "c:\windows\sysWOW64\lodctr" /R
-	WinMgmt /RESYNCPERF
+If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force}
+& "c:\windows\system32\lodctr" /R
+& "c:\windows\sysWOW64\lodctr" /R
+WinMgmt /RESYNCPERF
 	
 Write-Output ""
 Write-Output "====================---------- End of Performance Optimisations ----------===================="

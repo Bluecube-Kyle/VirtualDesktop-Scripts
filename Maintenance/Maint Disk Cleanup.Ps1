@@ -47,13 +47,13 @@ Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
 $Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Restart-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
-	}	
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Manual
+		Restart-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Manual and Started"
+	} Else {Write-Output "$Matches not present"}
+}	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
 
@@ -86,13 +86,13 @@ Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
 	
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled
-			Stop-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
-	}		
+Foreach($Matches in $WUServices) {
+	If($Services -match $Matches) {
+		Set-Service $Matches -StartupType Disabled
+		Stop-Service $Matches -Force
+		Write-Output "Startup of service $Matches set to Disabled and Stopped"
+	} Else {Write-Output "$Matches not present"}
+}		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
 Set-ItemProperty -Path $RegAu -Name NoAutoUpdate -Value 1 -Force -Passthru

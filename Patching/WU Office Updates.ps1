@@ -28,12 +28,13 @@ $Log = "$ENV:ComputerName - $Time"
 #Create Variables File
 $ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
 $Config = Test-Path -Path $ConfigFile
-	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#
-#Created by Kyle Baxter
-
-#Configurable Variable for script execution
-#Toggle settings have a value of 0 or 1 to disable or enable the option"
+If($Config -eq $false){
+	New-Item -Path $ConfigFile
+	Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#"
+	Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
+	Add-Content -Path $ConfigFile -Value ""
+	Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
+	Add-Content -Path $ConfigFile -Value "#Toggle settings have a value of 0 or 1 to disable or enable the option"
 }
 
 #Acquire all Variable stored in file
@@ -44,9 +45,7 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 
 #Look if required variables are stored
 Clear
-If($Script:IncludeOfficeUpdates -eq $null) {
-	Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"
-	Clear}		
+If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
