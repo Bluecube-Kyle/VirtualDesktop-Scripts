@@ -44,8 +44,8 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
-Clear
-If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
+Clear-Host
+If($null -eq $IncludeOfficeUpdates) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -70,7 +70,7 @@ If($Script:IncludeOfficeUpdates -eq "1") {
 	$OfficeUpdater = Test-Path -Path "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe"
 	If($OfficeUpdater -eq $true) {
 		Write-Output "Click to Run updater present. Beginning update"
-		If((Get-Service ClickToRunSvc | Select -Property Status) -notmatch "Running") {Start-Service ClicktoRunSvc}
+		If((Get-Service ClickToRunSvc | Select-Object -Property Status) -notmatch "Running") {Start-Service ClicktoRunSvc}
 		Start-Process "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe" -ArgumentList "/Update user forceappshutdown=true"
 		#Wait for Installer to report Up to date or updated - Required as C2RClients opens and closes multiple processes. -Wait only waits on the first to finish
 		#Checks processes status, Sleeps for 1s then rechecks process stats. Loops until condition is met of up to date message

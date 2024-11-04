@@ -126,9 +126,9 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	}
 
 	#Look if required variables are stored
-	Clear
-	If($Script:ExcludedUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
-	If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
+	Clear-Host
+	If($null -eq $ExcludedUpdates) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
+	If($null -eq $IncludeOfficeUpdates) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 	#Create Custom Script extention file 
 	$CustomScript = "C:\VDI Tools\Patching\CustomScripts.ps1"

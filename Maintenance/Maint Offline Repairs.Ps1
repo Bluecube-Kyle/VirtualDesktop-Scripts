@@ -49,13 +49,13 @@ Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
-$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Manual
-		Restart-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Manual and Started"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $WUServices -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Manual
+		Restart-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Manual and Started"
+	} Else {Write-Output "$MatchedService not present"}
 }	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
@@ -123,11 +123,11 @@ Dism /Cleanup-MountPoints
 #--------------------Check Disk Scan and Repair--------------------#
 Write-Output "Chckdisk scan"
 Write-Progress -Activity "Offline System Repair" -Status "Repairing C Volume" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Restart-Service $Matches -Force
-		Write-Output "Service $Matches Restarted"
-	} Else {Write-Output "$Matches not present"}
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Restart-Service $MatchedService -Force
+		Write-Output "Service $MatchedService Restarted"
+	} Else {Write-Output "$MatchedService not present"}
 }	
 Get-Volume
 Repair-Volume -DriveLetter C  
@@ -146,12 +146,12 @@ WinMgmt /RESYNCPERF
 #--------------------Stop and Disable Services--------------------#
 Write-Output "Stopping Offline Repair Services"
 Write-Progress -Activity "Offline System Repair" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Disabled
-		Stop-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Disabled and Stopped"
-	} Else {Write-Output "$Matches not present"}
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Disabled
+		Stop-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Disabled and Stopped"
+	} Else {Write-Output "$MatchedService not present"}
 }		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru

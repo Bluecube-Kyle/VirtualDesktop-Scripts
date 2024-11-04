@@ -28,12 +28,13 @@ $Log = "$ENV:ComputerName - $Time"
 #Create Variables File
 $ConfigFile = "C:\VDI Tools\Configs\PatchingConf.txt"
 $Config = Test-Path -Path $ConfigFile
-	If($Config -eq $false){New-Item -Path $ConfigFile
-Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#
-#Created by Kyle Baxter
-
-#Configurable Variable for script execution
-#Toggle settings have a value of 0 or 1 to disable or enable the option"
+If($Config -eq $false){
+	New-Item -Path $ConfigFile
+	Add-Content -Path $ConfigFile -Value "#---------------Patching Config V1.0---------------#"
+	Add-Content -Path $ConfigFile -Value "#Created by Kyle Baxter"
+	Add-Content -Path $ConfigFile -Value ""
+	Add-Content -Path $ConfigFile -Value "#Configurable Variable for script execution"
+	Add-Content -Path $ConfigFile -Value" #Toggle settings have a value of 0 or 1 to disable or enable the option"
 }
 
 #Acquire all Variable stored in file
@@ -43,8 +44,8 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
-Clear
-If($Script:ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
+Clear-Host
+If($null -eq $ClearLogs) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -75,13 +76,13 @@ Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
-$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Manual
-		Restart-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Manual and Started"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $WUServices -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object-Object -Expand Value 
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Manual
+		Restart-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Manual and Started"
+	} Else {Write-Output "$MatchedService not present"}
 }	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
@@ -90,8 +91,8 @@ Write-Output "Startup of service TrustedInstaller set to Manual"
 #DiskMgr Cleanup. First sets stateflags to select all options with StateFlag 1
 Write-Progress -Activity "DiskCleanup" -Status "Disk Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 $VolumeCachesRegDir = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
-$CacheDirItemNames = Get-ItemProperty "$VolumeCachesRegDir\*" | select -ExpandProperty PSChildName
-$CacheDirItemNames | %{$exists = Get-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name "StateFlags0001" -ErrorAction SilentlyContinue
+$CacheDirItemNames = Get-ItemProperty "$VolumeCachesRegDir\*" | Select-Object -ExpandProperty PSChildName
+$CacheDirItemNames | ForEach-Object{$exists = Get-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name "StateFlags0001" -ErrorAction SilentlyContinue
 If (($exists -ne $null) -and ($exists.Length -ne 0)) {Set-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 2} else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
 	
 #Run DismMgr with arguments for Stateflage option 1 and only run on SystemDrive (OS Drive, Almost always C)
@@ -127,12 +128,12 @@ If($AnalyzeStore -match "Component Store Cleanup Recommended : Yes") {
 	
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Disabled
-		Stop-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Disabled and Stopped"
-	} Else {Write-Output "$Matches not present"}
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Disabled
+		Stop-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Disabled and Stopped"
+	} Else {Write-Output "$MatchedService not present"}
 }		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru

@@ -43,30 +43,30 @@ Write-Output ""
 Write-Output "====================---------- Disabling Unecessary Services ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-$Services = Get-Service | Select -Expand Name
+$Services = Get-Service | Select-Object -Expand Name
 $AutomaticService = $AutomaticService -Split ","
-$Matches = Select-String $AutomaticService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $AutomaticService) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Automatic
-		Write-Output "Startup of service $Matches set to Automatic"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $AutomaticService -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+Foreach($MatchedService in $AutomaticService) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Automatic
+		Write-Output "Startup of service $MatchedService set to Automatic"
+	} Else {Write-Output "$MatchedService not present"}
 }
 $ManualService = $ManualService -Split ","
-$Matches = Select-String $ManualService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $ManualService) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Manual
-		Write-Output "Startup of service $Matches set to Manual"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $ManualService -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+Foreach($MatchedService in $ManualService) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Manual
+		Write-Output "Startup of service $MatchedService set to Manual"
+	} Else {Write-Output "$MatchedService not present"}
 }
 $DisabledService = $DisabledService -Split ","
-$Matches = Select-String $DisabledService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $DisabledService) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Disabled
-		Write-Output "Startup of service $Matches set to Disabled"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $DisabledService -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+Foreach($MatchedService in $DisabledService) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Disabled
+		Write-Output "Startup of service $MatchedService set to Disabled"
+	} Else {Write-Output "$MatchedService not present"}
 }
 If($DisabledService -match "WaaSMedicSvc") {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc' -Name Start -Value 4 -Force -PassThru}		
 If($DisabledService -match "gupdate") { 

@@ -46,9 +46,9 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
-Clear
-If($Script:ExcludedUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
-If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
+Clear-Host
+If($null -eq $ExcludedUpdates) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
+If($null -eq $IncludeOfficeUpdates) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -85,12 +85,12 @@ If($Edge -eq $true) {
 	Stop-Process -Name MsEdge -Verbose -Force -ErrorAction SilentlyContinue	
 	$Services = Get-Service
 	$EdgeServices = "edgeupdate,edgeupdatem,MicrosoftEdgeElevationService" -Split ","
-	$Matches = Select-String $EdgeServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $EdgeServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual | Restart-Service -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
+	$MatchedService = Select-String $EdgeServices -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+	Foreach($MatchedService in $EdgeServices) {
+		If($Services -match $MatchedService) {
+			Set-Service $MatchedService -StartupType Manual | Restart-Service -Force
+			Write-Output "Startup of service $MatchedService set to Manual and Started"
+		} Else {Write-Output "$MatchedService not present"}
 	}
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Running Edge Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process msEdge
@@ -121,11 +121,11 @@ If($Edge -eq $true) {
 	Start-Sleep 30
 
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Foreach($Matches in $EdgeServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled | Stop-Service -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
+	Foreach($MatchedService in $EdgeServices) {
+		If($Services -match $MatchedService) {
+			Set-Service $MatchedService -StartupType Disabled | Stop-Service -Force
+			Write-Output "Startup of service $MatchedService set to Disabled and Stopped"
+		} Else {Write-Output "$MatchedService not present"}
 	}
 	$ScheduledTask = Get-ScheduledTask
 		If($ScheduledTask -match "MicrosoftEdgeUpdateBrowserReplacement") {Disable-ScheduledTask -TaskName "MicrosoftEdgeUpdateBrowserReplacementTask"}
