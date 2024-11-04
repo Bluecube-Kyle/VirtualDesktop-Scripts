@@ -46,9 +46,9 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
-Clear
-If($Script:ExcludedUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
-If($Script:IncludeOfficeUpdates -eq $null) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
+Clear-Host
+If($null -eq $ExcludedUpdates) {Add-Content -Path $ConfigFile -Value "ExcludedUpdates ="}
+If($null -eq $IncludeOfficeUpdates) {Add-Content -Path $ConfigFile -Value "IncludeOfficeUpdates = 1"}		
 
 #Acquire all Variable stored in file
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -80,13 +80,13 @@ Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
-$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Manual
-		Restart-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Manual and Started"
-	} Else {Write-Output "$Matches not present"}
+$MatchedService = Select-String $WUServices -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Manual
+		Restart-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Manual and Started"
+	} Else {Write-Output "$MatchedService not present"}
 }	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
@@ -157,12 +157,12 @@ Start-Process "C:\Windows\Microsoft.Net\Framework64\v4.0.30319\ngen.exe" -Args "
 
 #Stop Services and then Disable them
 Write-Progress -Activity "Windows Updates" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Foreach($Matches in $WUServices) {
-	If($Services -match $Matches) {
-		Set-Service $Matches -StartupType Disabled
-		Stop-Service $Matches -Force
-		Write-Output "Startup of service $Matches set to Disabled and Stopped"
-	} Else {Write-Output "$Matches not present"}
+Foreach($MatchedService in $WUServices) {
+	If($Services -match $MatchedService) {
+		Set-Service $MatchedService -StartupType Disabled
+		Stop-Service $MatchedService -Force
+		Write-Output "Startup of service $MatchedService set to Disabled and Stopped"
+	} Else {Write-Output "$MatchedService not present"}
 }	
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru

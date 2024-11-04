@@ -120,29 +120,28 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 	}
 
 	#Look if required variables are stored
-	Clear
-	If($DomainControllers -eq $null) {
+	If($null -eq $DomainControllers) {
 		Write-Output "Enter the name of DomainControllers in quotations"
 		Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
 		$DomainControllers = Read-Host -Prompt "FQDN"
 		Add-Content -Path $ConfigFile -Value "DomainControllers = $DomainControllers"
 	}
-	If($HybridAD -eq $null) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
-	If($CorrectServices -eq $null) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
-	If($DisableTasks -eq $null) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
-	If($DefaultUser -eq $null) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
-	If($Rearm -eq $null) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
-	If($VirtualDesktopType -eq $null) {
+	If($null -eq $HybridAD) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
+	If($null -eq $CorrectServices) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
+	If($null -eq $DisableTasks) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
+	If($null -eq $DefaultUser) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
+	If($null -eq $Rearm) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
+	If($null -eq $VirtualDesktopType) {
 		$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 		Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $VirtualDesktopType"
 	}
-	If($ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
-	If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
-	If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
-	If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
-	If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
-	If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
-	If($SentinelOne -eq $null) {
+	If($null -eq $ClearLogs) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
+	If($null -eq $AutomaticService) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
+	If($null -eq $AutomaticDelayedService) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
+	If($null -eq $ManualService) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
+	If($null -eq $DisabledService) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+	If($null -eq $WinSxSCleanup) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
+	If($null -eq $SentinelOne) {
 		$Process = Get-Process 
 		If($Process -match "SentinelAgent") {
 			Add-Content -Path $ConfigFile -Value "SentinelOne = 1"
@@ -186,7 +185,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 		Set-AuthenticodeSignature -FilePath "$Path\$Name" -Certificate $codeCertificate -TimeStampServer "http://timestamp.digicert.com"
 	}
 
-	Clear
+	Clear-Host
 	
 	#---------------------------------------------------- Execute chosen options ----------------------------------------------------#
 	
