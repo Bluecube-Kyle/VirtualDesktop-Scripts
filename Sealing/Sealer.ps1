@@ -46,29 +46,29 @@ Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!
 }
 
 #Look if required variables are stored
-Clear
-If($DomainControllers -eq $null) {
+Clear-Host-Host
+If($null -eq $DomainControllers) {
 	Write-Output "Enter the name of DomainControllers in quotations"
 	Write-Output 'Example: "Ekco-DC01 Ekco-DC02"'
 	$DomainControllers = Read-Host -Prompt "FQDN"
 	Add-Content -Path $ConfigFile -Value "DomainControllers = $DomainControllers"
 }
-If($HybridAD -eq $null) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
-If($CorrectServices -eq $null) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
-If($DisableTasks -eq $null) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
-If($DefaultUser -eq $null) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
-If($Rearm -eq $null) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
-If($VirtualDesktopType -eq $null) {
+If($null -eq $HybridAD) {Add-Content -Path $ConfigFile -Value "HybridAD = 1"}
+If($null -eq $CorrectServices) {Add-Content -Path $ConfigFile -Value "CorrectServices = 1"}
+If($null -eq $DisableTasks) {Add-Content -Path $ConfigFile -Value "DisableTasks = 1"}
+If($null -eq $DefaultUser) {Add-Content -Path $ConfigFile -Value "DefaultUser = 1"}	
+If($null -eq $Rearm) {Add-Content -Path $ConfigFile -Value "Rearm = 0"}	
+If($null -eq $VirtualDesktopType) {
 	$VirtualDesktopType = Read-Host -Prompt "Provisioning Type - Enter MCS/PVS"
 	Add-Content -Path $ConfigFile -Value "VirtualDesktopType = $VirtualDesktopType"
 }
-If($ClearLogs -eq $null) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
-If($AutomaticService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
-If($AutomaticDelayedService -eq $null) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
-If($ManualService -eq $null) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
-If($DisabledService -eq $null) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
-If($WinSxSCleanup -eq $null) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
-Clear
+If($null -eq $ClearLogs) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}		
+If($null -eq $AutomaticService) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
+If($null -eq $AutomaticDelayedService) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
+If($null -eq $ManualService) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
+If($null -eq $DisabledService) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+If($null -eq $WinSxSCleanup) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
+Clear-Host
 
 #Re-Acquire all Variable stored in file. This is necessary to update Service values 
 Get-Content -Path $ConfigFile | Where-Object {$_.length -gt 0} | Where-Object {!$_.StartsWith("#")} | ForEach-Object {
@@ -131,13 +131,13 @@ Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 0 -Force -
 Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name NoAutoUpdate -Value 0 -Force -Passthru
 $Services = Get-Service
 $WUServices = "UsoSvc,Wuauserv,Vss,SmpHost,Uhssvc,DPS,BITS" -Split ","
-$Matches = Select-String $WUServices -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Manual
-			Restart-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Manual and Started"
-		} Else {Write-Output "$Matches not present"}
+$MatchedServices = Select-String $WUServices -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+	Foreach($MatchedServices in $WUServices) {
+		If($Services -match $MatchedServices) {
+			Set-Service $MatchedServices -StartupType Manual
+			Restart-Service $MatchedServices -Force
+			Write-Output "Startup of service $MatchedServices set to Manual and Started"
+		} Else {Write-Output "$MatchedServices not present"}
 	}	
 Set-Service TrustedInstaller -StartupType Manual
 Write-Output "Startup of service TrustedInstaller set to Manual"
@@ -146,12 +146,12 @@ Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -Percent
 Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
 
 Write-Progress -Activity "Sealing Image" -Status "WinSxS Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	Foreach($Matches in $WUServices) {
-		If($Services -match $Matches) {
-			Set-Service $Matches -StartupType Disabled
-			Stop-Service $Matches -Force
-			Write-Output "Startup of service $Matches set to Disabled and Stopped"
-		} Else {Write-Output "$Matches not present"}
+	Foreach($MatchedServices in $WUServices) {
+		If($Services -match $MatchedServices) {
+			Set-Service $MatchedServices -StartupType Disabled
+			Stop-Service $MatchedServices -Force
+			Write-Output "Startup of service $MatchedServices set to Disabled and Stopped"
+		} Else {Write-Output "$MatchedServices not present"}
 	}		
 If((Test-Path $RegWuMedic) -eq $true) {Set-ItemProperty -Path $RegWuMedic -Name Start -Value 4 -Force -Passthru}
 Set-ItemProperty -Path $RegWu -Name DisableWindowsUpdateAccess -Value 1 -Force -Passthru
@@ -163,30 +163,30 @@ Write-Output "====================---------- Disabling Unecessary Services -----
 Write-Output ""
 	If($CorrectServices -eq "1") {		
 		Write-Progress -Activity "Sealing Image" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-		$Services = Get-Service | Select -Expand Name
+		$Services = Get-Service | Select-Object -Expand Name
 		$AutomaticService = $AutomaticService -Split ","
-		$Matches = Select-String $AutomaticService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-		Foreach($Matches in $AutomaticService) {
-			If($Services -match $Matches) {
-				Set-Service $Matches -StartupType Automatic
-				Write-Output "Startup of service $Matches set to Automatic"
-			} Else {Write-Output "$Matches not present"}
+		$MatchedServices = Select-String $AutomaticService -Input $Services -AllMatches | ForEach-Object-Object {$_.matches} | Select-Object -Expand Value 
+		Foreach($MatchedServices in $AutomaticService) {
+			If($Services -match $MatchedServices) {
+				Set-Service $MatchedServices -StartupType Automatic
+				Write-Output "Startup of service $MatchedServices set to Automatic"
+			} Else {Write-Output "$MatchedServices not present"}
 		}
 		$ManualService = $ManualService -Split ","
-		$Matches = Select-String $ManualService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-		Foreach($Matches in $ManualService) {
-			If($Services -match $Matches) {
-				Set-Service $Matches -StartupType Manual
-				Write-Output "Startup of service $Matches set to Manual"
-			} Else {Write-Output "$Matches not present"}
+		$MatchedServices = Select-String $ManualService -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+		Foreach($MatchedServices in $ManualService) {
+			If($Services -match $MatchedServices) {
+				Set-Service $MatchedServices -StartupType Manual
+				Write-Output "Startup of service $MatchedServices set to Manual"
+			} Else {Write-Output "$MatchedServices not present"}
 		}
 		$DisabledService = $DisabledService -Split ","
-		$Matches = Select-String $DisabledService -Input $Services -AllMatches | Foreach {$_.matches} | Select -Expand Value 
-		Foreach($Matches in $DisabledService) {
-			If($Services -match $Matches) {
-				Set-Service $Matches -StartupType Disabled
-				Write-Output "Startup of service $Matches set to Disabled"
-			} Else {Write-Output "$Matches not present"}
+		$MatchedServices = Select-String $DisabledService -Input $Services -AllMatches | ForEach-Object {$_.matches} | Select-Object -Expand Value 
+		Foreach($MatchedServices in $DisabledService) {
+			If($Services -match $MatchedServices) {
+				Set-Service $MatchedServices -StartupType Disabled
+				Write-Output "Startup of service $MatchedServices set to Disabled"
+			} Else {Write-Output "$MatchedServices not present"}
 		}
 		If($DisabledService -match "WaaSMedicSvc") {Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc' -Name Start -Value 4 -Force -PassThru}		
 		If($DisabledService -match "gupdate") { 
@@ -305,6 +305,7 @@ $RedSystemPolicies = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\S
 $RegWSearch = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 $RegWu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate'
 $RegAu = 'HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU'
+$RegChrome = 'HKLM:\SOFTWARE\Policies\Google\Update\'
 $RegFireFox = 'HKLM:\SOFTWARE\Policies\Mozilla\FireFox'
 $RegAdobe = 'HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown'
 $WUUX = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
@@ -319,6 +320,7 @@ If(!(Test-Path $RedSystemPolicies)) {New-Item -Path $RedSystemPolicies -Force}
 If(!(Test-Path $RegWSearch)) {New-Item -Path $RegWSearch -Force}
 If(!(Test-Path $RegWu)) {New-Item -Path $RegWu -Force}
 If(!(Test-Path $RegAu)) {New-Item -Path $RegAu -Force}
+If(!(Test-Path $RegChrome)) {New-Item -Path $RegAu -Force}
 If(!(Test-Path $RegFireFox)) {New-Item -Path $RegFireFox -Force}
 If(!(Test-Path $RegAdobe)) {New-Item -Path $RegAdobe -Force}
 If(!(Test-Path $WUUX)) {New-Item -Path $WUUX -Force}
@@ -333,6 +335,7 @@ Set-ItemProperty -Path $RegWSearch -Name "AllowCortana" -Value 0 -Type Dword -Fo
 Set-ItemProperty -Path $RegWSearch -Name "SetupCompletedSuccessfully" -Value 0 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegWu -Name "DisableWindowsUpdateAccess" -Value 1 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegAu -Name "NoAutoUpdate" -Value 1 -Type Dword -Force -PassThru
+Set-ItemProperty -Path $RegChrome -Name "UpdateDefault" -Value 0 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegFireFox -Name "DisableAppUpdate" -Value 1 -Type Dword -Force -PassThru
 Set-ItemProperty -Path $RegAdobe -Name "bUpdater" -Value 0 -Type Dword -Force -PassThru	
 Set-ItemProperty -Path $WUUX -Name "PauseFeatureUpdatesStartTime" -Type String -Value $TimeStart
@@ -437,7 +440,7 @@ Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyConti
 Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 #>
 
-$Services = Get-Service | Select -Expand Name
+$Services = Get-Service | Select-Object -Expand Name
 	If($Services -Match "CtxProfile") {
 	Get-service -Name CtxProfile | Stop-Service 
 	Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\" -Recurse -Force -ErrorAction SilentlyContinue
