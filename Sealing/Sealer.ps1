@@ -66,7 +66,7 @@ If($null -eq $ClearLogs) {Add-Content -Path $ConfigFile -Value "ClearLogs = 1"}
 If($null -eq $AutomaticService) {Add-Content -Path $ConfigFile -Value "AutomaticService = BrokerAgent,BITS,WSearch"}
 If($null -eq $AutomaticDelayedService) {Add-Content -Path $ConfigFile -Value "AutomaticDelayedService ="}
 If($null -eq $ManualService) {Add-Content -Path $ConfigFile -Value "ManualService = DsmSvc,ClickToRunSvc"}
-If($null -eq $DisabledService) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance,imUpdateManagerService "}
+If($null -eq $DisabledService) {Add-Content -Path $ConfigFile -Value "DisabledService = Autotimesvc,CaptureService,CDPSvc,CDPUserSvc,DiagSvc,Defragsvc,DiagTrack,DPS,DusmSvc,icssvc,InstallService,lfsvc,MapsBroker,MessagingService,OneSyncSvc,PimIndexMaintenanceSvc,RmSvc,SEMgrSvc,SmsRouter,SmpHost,SysMain,TabletInputService,UsoSvc,PushToInstall,WMPNetworkSvc,WerSvc,WdiSystemHost,VSS,XblAuthManager,XblGameSave,XboxGipSvc,XboxNetApiSvc,Wuauserv,Uhssvc,gupdate,gupdatem,GoogleChromeElevationService,edgeupdate,edgeupdatem,MicrosoftEdgeElevationService,MozillaMaintenance"}
 If($null -eq $WinSxSCleanup) {Add-Content -Path $ConfigFile -Value "WinSxSCleanup = 1"}
 Clear-Host
 
@@ -397,7 +397,7 @@ Write-Output ""
 Write-Output "====================---------- Reset System Performance Counters ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-	If($Services -match "WinMgmt") {Stop-Service Wuauserv -Force}
+If((Get-Service WinMgmt | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service WinMgmt -Force}
 	& "c:\windows\system32\lodctr" /R
 	& "c:\windows\sysWOW64\lodctr" /R
 	WinMgmt /RESYNCPERF
@@ -406,47 +406,36 @@ Write-Progress -Activity "Sealing Image" -Status "Rebuild Perf Counters" -Id 1 -
 Write-Output "====================---------- Clear Software Distribution Folder ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing SoftwareDistribution Folder" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-$SoftwareDistribution = Test-Path -Path "C:\Windows\SoftwareDistribution"
-	If($Services -match "Wuauserv") {Stop-Service Wuauserv -Force}
-	If($SoftwareDistribution -eq $true) {Remove-Item -Path "C:\Windows\SoftwareDistribution" -Force -Recurse}
+If((Get-Service Wuauserv | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service Wuauserv -Force}
+Remove-Item -Path "C:\Windows\SoftwareDistribution\*" -Force -Recurse
 
 #Reset Windows Search Index
 Write-Output "====================---------- Reset Windows Search Index ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Resetting WSearch Index" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Stop-Service WSearch -Force
+If((Get-Service WSearch | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service WSearch -Force}
 Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Windows.edb" -Force
 
 #Clear Event Logs
 Write-Output "====================---------- Clear All Event Logs ----------===================="
 Write-Output ""
-
 If($ClearLogs -eq "1") {
-Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-$Logs = Get-EventLog -List
-Clear-EventLog -LogName $Logs.Log
-Get-Eventlog -List
-} Else {Write-Output "Clear Logs on Seal Disabled"}
+	Write-Progress -Activity "Sealing Image" -Status "EventLog Cleanup" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
+	Clear-EventLog -LogName (Get-Eventlog -List).Log
+	Get-Eventlog -List
+	} Else {Write-Output "Clear Logs on Seal Disabled"}
 
 #Clear Unecessary Data
 Write-Output "====================---------- Clear Unecessary Data ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-<#
-$Exclude = @("defaultuser*","Public")
-$Users = Get-ChildItem -Path "C:\Users\" -Exclude $Exclude 
-Foreach ($User in $users) {Remove-Item "$User\Appdata" -Force -Recurse -ErrorAction SilentlyContinue}
-Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
-#>
+Remove-Item -Path "C:\Users\Autologon\AppData\*" -Force -Recurse
 
-$Services = Get-Service | Select-Object -Expand Name
-	If($Services -Match "CtxProfile") {
-	Get-service -Name CtxProfile | Stop-Service 
-	Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\" -Recurse -Force -ErrorAction SilentlyContinue
-	}
+If((Get-Service CtxProfile | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service CtxProfile -Force}
+Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\*" -Recurse -Force 
+
 $MSA = Test-Path "C:\ProgramData\Mimecast\Security Agent"
-	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs" -Recurse -Force -ErrorAction SilentlyContinue}
+	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs\*" -Recurse -Force}
 
 #Clear Recycle Bin
 Write-Output "====================---------- Clear All Recycle Bin ----------===================="
@@ -477,9 +466,11 @@ IpConfig /FlushDns
 IpConfig /Release "Domain Network"
 
 If($VirtualDesktopType -match "PVS") {
-Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
-Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Force
+	Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+	Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
+	Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Force
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl\" -Name "CrashDumpEnabled" -Value 0 -Force
+	Remove-Item "D:\DumpFiles\*" -Force -Recurse
 }
 If($VirtualDesktopType -match "MCS") { }
 Stop-Transcript
