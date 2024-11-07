@@ -429,13 +429,13 @@ If($ClearLogs -eq "1") {
 Write-Output "====================---------- Clear Unecessary Data ----------===================="
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
-Remove-Item -Path "C:\Users\Autologon\AppData\*" -Force -Recurse
+Remove-Item -Path "C:\Users\Autologon\AppData\*" -Force -Recurse -ErrorAction SilentlyContinue
 
 If((Get-Service CtxProfile | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service CtxProfile -Force}
-Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\*" -Recurse -Force 
+Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\*" -Recurse -Force -ErrorAction SilentlyContinue
 
 $MSA = Test-Path "C:\ProgramData\Mimecast\Security Agent"
-	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs\*" -Recurse -Force}
+	If($MSA) {Remove-Item "C:\ProgramData\Mimecast\Security Agent\Logs\*" -Recurse -Force -ErrorAction SilentlyContinue}
 
 #Clear Recycle Bin
 Write-Output "====================---------- Clear All Recycle Bin ----------===================="
@@ -470,7 +470,7 @@ If($VirtualDesktopType -match "PVS") {
 	Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
 	Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Force
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl\" -Name "CrashDumpEnabled" -Value 0 -Force
-	Remove-Item "D:\DumpFiles\*" -Force -Recurse
+	Remove-Item "D:\DumpFiles\*" -Force -Recurse -ErrorAction SilentlyContinue
 }
 If($VirtualDesktopType -match "MCS") { }
 Stop-Transcript
