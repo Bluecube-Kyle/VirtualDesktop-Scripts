@@ -80,6 +80,7 @@ $OperatingSystem = systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version"
 $OperatingSystem
 Write-Progress -Activity "Offline System Repair" -Status "Downloading OS Iso File" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 $ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 #Dism Repair using local Iso file (Win2016)
 If($OperatingSystem -match "Windows Server 2016") {
 	Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkID=2195174&clcid=0x409&culture=en-us&country=US" -OutFile "$Installs\WinServer2016.iso"
