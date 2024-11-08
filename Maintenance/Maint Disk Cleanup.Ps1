@@ -67,7 +67,7 @@ $CacheDirItemNames | ForEach-Object{$exists = Get-ItemProperty -Path "$VolumeCac
 	else {New-ItemProperty -Path "$VolumeCachesRegDir\$_" -Name StateFlags0001 -Value 0 -PropertyType DWord}}
 	
 #Run DismMgr with arguments for Stateflage option 1 and only run on SystemDrive (OS Drive, Almost always C)
-Start-Process CleanMgr -ArgumentList "/sagerun:1 /D%SystemDrive%" -PassThru -Wait
+Start-Process CleanMgr -ArgumentList "/sagerun:1" -PassThru -Wait
 Write-Output "Disk Cleanup cleared unecessary files"
 
 #--------------------Event Logs--------------------#
@@ -82,7 +82,7 @@ Get-Eventlog -List
 Write-Progress -Activity "DiskCleanup" -Status "Checking WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 Dism /Online /Cleanup-Image /AnalyzeComponentStore /NoRestart
 Write-Progress -Activity "DiskCleanup" -Status "Cleaning WinSxS Store" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart
+Dism /Online /Cleanup-Image /StartComponentCleanup /NoRestart /ResetBase
 	
 #Stop Services and disable them
 Write-Progress -Activity "DiskCleanup" -Status "Stopping Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
