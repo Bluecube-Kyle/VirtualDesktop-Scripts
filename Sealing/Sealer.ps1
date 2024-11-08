@@ -430,6 +430,7 @@ Write-Output "====================---------- Clear Unecessary Data ----------===
 Write-Output ""
 Write-Progress -Activity "Sealing Image" -Status "Clearing Unecessary Data" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100 
 Remove-Item -Path "C:\Users\Autologon\AppData\*" -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\Temp\*" -Force -Recurse -ErrorAction SilentlyContinue
 
 If((Get-Service CtxProfile | Select-Object -Property Status) -notmatch "Stopped") {Stop-Service CtxProfile -Force}
 Remove-Item -Path "C:\Windows\System32\LogFiles\UserProfileManager\*" -Recurse -Force -ErrorAction SilentlyContinue
