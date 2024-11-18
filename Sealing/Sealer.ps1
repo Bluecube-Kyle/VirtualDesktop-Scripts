@@ -86,6 +86,7 @@ $TotalTasks = 10
 	If($DefaultUser -eq "1") {$TotalTasks += 1}
 	If($Rearm -eq "1") {$TotalTasks += 1}
 	If($VirtualDesktopType -match "PVS") {$TotalTasks += 1}
+	If($VirtualDesktopType -match "MCS") {$TotalTasks += 1}
 	If($ClearLogs -eq "1") {$TotalTasks += 1}
 	If($WinSxSCleanup -eq "1") {$TotalTasks += 3}
 
@@ -473,5 +474,12 @@ If($VirtualDesktopType -match "PVS") {
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl\" -Name "CrashDumpEnabled" -Value 0 -Force
 	Remove-Item "D:\DumpFiles\*" -Force -Recurse -ErrorAction SilentlyContinue
 }
-If($VirtualDesktopType -match "MCS") { }
+If($VirtualDesktopType -match "MCS") { 
+	Write-Progress -Activity "Sealing Image" -Status "Defrag" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+	#Defrag C volume
+	Set-Service DefragSvc -StartupType Manual
+	Defrag C: /A
+	Defrag C: /U /V
+	Set-Service DefragSvc -StartupType Manual
+}
 Stop-Transcript
