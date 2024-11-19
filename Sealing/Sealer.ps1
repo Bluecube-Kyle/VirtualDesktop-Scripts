@@ -460,13 +460,6 @@ If($Rearm -eq "1"){
 	Start-Sleep 10
 } Else {Write-Output "Rearm On Seal Disabled"}
 
-#Clear IP And DNS
-Write-Output "====================---------- Clear IP and DNS Cache ----------===================="
-Write-Output ""
-Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
-IpConfig /FlushDns
-IpConfig /Release "Domain Network"
-
 If($VirtualDesktopType -match "PVS") {
 	Write-Progress -Activity "Sealing Image" -Status "Clear TCPIP" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Remove-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Force 
@@ -482,4 +475,12 @@ If($VirtualDesktopType -match "MCS") {
 	Defrag C: /U /V
 	Set-Service DefragSvc -StartupType Manual
 }
+
+#Clear IP And DNS
+Write-Output "====================---------- Clear IP and DNS Cache ----------===================="
+Write-Output ""
+Write-Progress -Activity "Sealing Image" -Status "Clear DNS" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
+IpConfig /FlushDns
+IpConfig /Release "Domain Network"
+
 Stop-Transcript
