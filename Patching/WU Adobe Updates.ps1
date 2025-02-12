@@ -44,6 +44,11 @@ $AdobeX64 = Test-Path -Path "C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.e
 If(($AdobeX32 -eq $true) -or ($AdobeX64 -eq $true)) {
 	Write-Progress -Activity "Adobe Updates" -Status "Running Adobe Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown" -Name "bUpdater" -Value 1 -Type Dword -Force -PassThru
+	$Services = Get-Service
+	If($Services -match "AdobeARMservice") {
+		Set-Service AdobeARMservice -StartupType Manual
+		Start-Service AdobeARMservice
+	}
 	Start-Process "C:\Program Files (x86)\Common Files\Adobe\ARM\1.0\AdobeARM.exe" -Wait 
 	Write-Output "Adobe Updated"
 
@@ -51,7 +56,10 @@ If(($AdobeX32 -eq $true) -or ($AdobeX64 -eq $true)) {
 	Write-Progress -Activity "Adobe Updates" -Status "Disabling Adobe Services and Tasks" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Services = Get-Service
 	$ScheduledTask = Get-ScheduledTask
-	If($Services -match "AdobeARMservice") {Set-Service AdobeARMservice -StartupType Disabled -PassThru}
+	If($Services -match "AdobeARMservice") {
+		Set-Service AdobeARMservice -StartupType Disabled
+		Stop-Service AdobeARMservice -Force
+	}
 	If($ScheduledTask -match "Adobe Acrobat Update Task") {Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task"}
 	#Disable Manual Updates in App
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Adobe\Acrobat Reader\DC\FeatureLockDown" -Name "bUpdater" -Value 0 -Type Dword -Force -PassThru	

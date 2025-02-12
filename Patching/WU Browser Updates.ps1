@@ -94,31 +94,31 @@ If($Edge -eq $true) {
 	}
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Running Edge Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process msEdge
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("msEdge")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("Edge://help")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 		
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Waiting for Update completion" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Processes = Get-Process
 	If($Processes -Match "MicrosoftEdgeUpdate") {Wait-Process -Name MicrosoftEdgeUpdate}
 	Stop-Process -Name MsEdge -Verbose -Force
-	Start-Sleep 10
+	Start-Sleep 15
 
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Applying Update" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process msEdge
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("msEdge")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("Edge://help")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 
 	Write-Progress -Activity "Browser Updates - Edge" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Foreach($MatchedService in $EdgeServices) {
@@ -153,31 +153,31 @@ If(($Chrome -eq $true) -or ($Chrome64 -eq $true))  {
 
 	Write-Progress -Activity "Browser Updates - Chrome" -Status "Running Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process Chrome
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("Chrome")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("Chrome://help")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 
 	Write-Progress -Activity "Browser Updates - Chrome" -Status "Waiting for Update completion" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Processes = Get-Process
 	If($Processes -Match "GoogleUpdate") {Wait-Process -Name GoogleUpdate}
 	Stop-Process -Name Chrome -Verbose -Force
-	Start-Sleep 10
+	Start-Sleep 15
 
 	Write-Progress -Activity "Browser Updates - Chrome" -Status "Applying Update" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process Chrome
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("Chrome")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("Chrome://help")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 
 	Write-Progress -Activity "Browser Updates - Chrome" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Services = Get-Service
@@ -205,31 +205,31 @@ If(($FireFox -eq $true) -or ($FireFox64 -eq $true))  {
 
 	Write-Progress -Activity "Browser Updates - FireFox" -Status "Running Updater" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process FireFox
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("FireFox")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("chrome://browser/content/aboutDialog.xhtml")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 
 	Write-Progress -Activity "Browser Updates - FireFox" -Status "Waiting for Update completion" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	$Processes = Get-Process
 	If($Processes -Match "Updater") {Wait-Process -Name Updater}
 	Stop-Process -Name FireFox -Verbose -Force -ErrorAction SilentlyContinue
-	Start-Sleep 10
+	Start-Sleep 15
 
 	Write-Progress -Activity "Browser Updates - FireFox" -Status "Applying Update" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 	Start-Process FireFox
-	Start-Sleep 10
+	Start-Sleep 15
 	$wshell = New-Object -ComObject wscript.shell;
 	$wshell.AppActivate("FireFox")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("chrome://browser/content/aboutDialog.xhtml")
-	Start-Sleep 4
+	Start-Sleep 5
 	$wshell.SendKeys("{ENTER}")
-	Start-Sleep 30
+	Start-Sleep 60
 
 	Write-Progress -Activity "Browser Updates - FireFox" -Status "Disabling Services" -Id 1 -PercentComplete $PercentComplete ; $CurrentTask += 1 ; $PercentComplete = ($CurrentTask / $TotalTasks) * 100
 		If($Services -match "MozillaMaintenance") {Set-Service MozillaMaintenance -StartupType Disabled | Stop-Service -Force}
